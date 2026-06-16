@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Gran Purria Porra · Mundial 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --campo:#14532d; --campo-osc:#0c3b1f;
+  --cal:#f4f7f1; --tinta:#13202f; --gris:#5d6b7a;
+  --linea:#d8e0d6; --oro:#f5b82e;
+  --exacto:#1d9e55; --signo:#e2a812; --radio:10px;
+  font-size:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--cal);color:var(--tinta);-webkit-font-smoothing:antialiased}
+
+header{background:var(--campo);background-image:repeating-linear-gradient(90deg, rgba(255,255,255,.045) 0 90px, transparent 90px 180px);color:#fff;padding:2.2rem 1.2rem 5.2rem;text-align:center;position:relative}
+header .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.32em;color:rgba(255,255,255,.65);text-transform:uppercase;margin-bottom:.55rem}
+header h1{font-family:'Archivo Black',sans-serif;font-size:clamp(1.5rem,4.5vw,2.7rem);line-height:1.05;text-transform:uppercase}
+header h1 span{color:var(--oro)}
+header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.5)}
+header .circulo{position:absolute;left:50%;bottom:-29px;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;border:2px solid rgba(255,255,255,.5);background:var(--campo);display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+
+.marcador{max-width:880px;margin:-2.2rem auto 0;padding:0 1rem;position:relative;z-index:2}
+.marcador-panel{background:var(--campo-osc);border-radius:var(--radio);padding:1.5rem 1.2rem 1.1rem;box-shadow:0 14px 34px -16px rgba(12,59,31,.55);display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem}
+.marcador-panel .titulo{grid-column:1/-1;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.3em;text-transform:uppercase;color:rgba(255,255,255,.5);text-align:center;margin-bottom:.2rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.punto{width:.5rem;height:.5rem;border-radius:50%;background:#e0533a;transition:background .3s}
+.punto.online{background:#34d17a;box-shadow:0 0 0 3px rgba(52,209,122,.2)}
+.jugador{text-align:center;color:#fff;border-radius:8px;padding:.7rem .3rem .8rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.jugador.lider{background:rgba(245,184,46,.12);border-color:var(--oro)}
+.jugador .nombre{font-weight:600;font-size:.85rem;margin-bottom:.2rem}
+.jugador .pts{font-family:'IBM Plex Mono',monospace;font-weight:700;font-size:2rem;line-height:1;color:var(--oro);font-variant-numeric:tabular-nums}
+.jugador .etiqueta{font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-top:.3rem}
+.jugador.lider .etiqueta{color:var(--oro)}
+
+.barra{max-width:880px;margin:1rem auto 0;padding:0 1rem;display:flex;justify-content:flex-end}
+.barra button{cursor:pointer;font:inherit;font-size:.78rem;font-weight:600;border:1px solid var(--campo);border-radius:999px;background:#fff;color:var(--campo);padding:.45rem 1rem;display:inline-flex;align-items:center;gap:.4rem;transition:all .15s ease}
+.barra button:hover{background:var(--campo);color:#fff}
+
+nav{position:sticky;top:0;z-index:5;background:var(--cal);border-bottom:1px solid var(--linea);padding:.7rem 1rem;display:flex;gap:.45rem;overflow-x:auto;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex:0 0 auto;cursor:pointer;font:inherit;font-size:.8rem;font-weight:600;border:1px solid var(--linea);border-radius:999px;background:#fff;color:var(--gris);padding:.42rem .95rem;transition:all .15s ease}
+nav button:hover{border-color:var(--campo);color:var(--campo)}
+nav button.activo{background:var(--campo);border-color:var(--campo);color:#fff}
+nav button:focus-visible{outline:2px solid var(--oro);outline-offset:2px}
+
+main{max-width:880px;margin:0 auto;padding:1.6rem 1rem 4rem}
+section{margin-bottom:2.6rem}
+.cabecera-seccion{display:flex;align-items:center;gap:.8rem;margin-bottom:.9rem}
+.cabecera-seccion h2{font-family:'Archivo Black',sans-serif;font-size:1.05rem;text-transform:uppercase;letter-spacing:.04em;color:var(--campo);white-space:nowrap}
+.cabecera-seccion::after{content:"";flex:1;height:2px;background:var(--linea)}
+
+.encabezados{display:grid;grid-template-columns:5.2rem 1fr repeat(5,4.4rem);gap:.45rem;align-items:end;padding:0 .6rem .35rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.encabezados div:nth-child(n+3){text-align:center}
+.encabezados .res{color:var(--campo);font-weight:700}
+
+.partido{display:grid;grid-template-columns:5.2rem 1fr repeat(5,4.4rem);gap:.45rem;align-items:center;background:#fff;border:1px solid var(--linea);border-radius:var(--radio);padding:.55rem .6rem;margin-bottom:.45rem}
+.partido .fecha{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--gris);line-height:1.3}
+.partido .equipos{font-weight:600;font-size:.88rem;line-height:1.25}
+
+.celda input{width:100%;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:500;border:1.5px solid var(--linea);border-radius:7px;padding:.42rem .15rem;background:var(--cal);color:var(--tinta);transition:border-color .15s ease, box-shadow .15s ease}
+.celda input::placeholder{color:#b9c4bd}
+.celda input:focus{outline:none;border-color:var(--campo);background:#fff;box-shadow:0 0 0 3px rgba(20,83,45,.12)}
+.celda.resultado input{border-color:var(--campo);background:#fff;font-weight:700}
+.celda input.exacto{border-color:var(--exacto);background:#e8f7ee;color:#0e6b38}
+.celda input.signo{border-color:var(--signo);background:#fdf4dd;color:#8a6508}
+.celda input.fallo{color:#9aa7a0;background:#f1f4f0}
+.celda input.error{border-color:#d23c3c;background:#fdeaea}
+.celda input.flash{animation:flash .6s ease}
+@keyframes flash{0%{background:#fff7da}100%{}}
+
+.leyenda{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--gris);margin-top:2rem;padding-bottom:2rem}
+.leyenda span::before{content:"";display:inline-block;width:.7rem;height:.7rem;border-radius:3px;margin-right:.35rem;vertical-align:-1px}
+.leyenda .l-exacto::before{background:#1d9e55}
+.leyenda .l-signo::before{background:#e2a812}
+.leyenda .l-fallo::before{background:#c8d2cb}
+
+#toast{position:fixed;bottom:1.2rem;left:50%;transform:translate(-50%,1rem);background:var(--tinta);color:#fff;font-size:.8rem;font-weight:500;padding:.6rem 1.1rem;border-radius:999px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:20;max-width:90vw;text-align:center}
+#toast.visible{opacity:1;transform:translate(-50%,0)}
+#toast.err{background:#b32626}
+
+.aviso-config{max-width:880px;margin:1.5rem auto;padding:1rem 1.2rem;background:#fff7e0;border:1px solid var(--oro);border-radius:var(--radio);color:#7a5b00;font-size:.85rem;line-height:1.5}
+.aviso-config code{background:#fff;padding:.1rem .35rem;border-radius:4px;font-family:'IBM Plex Mono',monospace;font-size:.8rem}
+
+@media (max-width:680px){
+  .encabezados{display:none}
+  .partido{grid-template-columns:repeat(5,1fr);row-gap:.5rem}
+  .partido .fecha{grid-column:1/3}
+  .partido .equipos{grid-column:3/6;text-align:right}
+  .celda{position:relative;padding-top:.9rem}
+  .celda::before{content:attr(data-nombre);position:absolute;top:0;left:0;right:0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
+  .celda.resultado::before{color:var(--campo);font-weight:700}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">Mundial 2026 · México · EE. UU. · Canadá</p>
+  <h1>La Gran Purria<br><span>Porra</span></h1>
+  <div class="circulo" aria-hidden="true">⚽</div>
+</header>
+
+<div class="marcador">
+  <div class="marcador-panel" id="marcador">
+    <div class="titulo"><span class="punto" id="punto"></span><span id="estado">Conectando…</span></div>
+  </div>
+</div>
+
+<div class="barra">
+  <button id="btnExcel" type="button">⬇ Descargar Excel</button>
+</div>
+
+<div id="avisoConfig" style="display:none"></div>
+
+<nav id="nav" aria-label="Fases del torneo"></nav>
+<main id="contenido"></main>
+
+<div class="leyenda">
+  <span class="l-exacto">Resultado exacto · 3 pts</span>
+  <span class="l-signo">Ganador o empate · 1 pt</span>
+  <span class="l-fallo">Sin acierto · 0 pts</span>
+</div>
+
+<div id="toast" role="status"></div>
+
+<!-- ============================================================= -->
+<!--  CONFIGURACIÓN DE FIREBASE                                    -->
+<!--  Pega aquí los datos de tu proyecto (ver instrucciones).      -->
+<!-- ============================================================= -->
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBtV5RfxqoFmuu-F3x1XcD2BA485JMLOJg",
+  authDomain: "porra-mundial-2026-bff10.firebaseapp.com",
+  databaseURL: "https://porra-mundial-2026-bff10-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "porra-mundial-2026-bff10",
+  storageBucket: "porra-mundial-2026-bff10.firebasestorage.app",
+  messagingSenderId: "384247743296",
+  appId: "1:384247743296:web:537572080ec58c10aa30a5"
+};
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set, get }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const SEED = {"jugadores": ["Andrés", "Brooks", "Fran", "Óscar"], "secciones": [{"nombre": "JORNADA 1", "partidos": [{"id": "p9", "fecha": "JUE 11 - 21:00", "partido": "México - Sudáfrica", "pron": ["2 - 1", "1 - 0", "3 - 0", "2 - 1"], "res": ""}, {"id": "p10", "fecha": "VIE 12 - 04:00", "partido": "Corea del Sur - Chequia", "pron": ["", "", "", ""], "res": ""}, {"id": "p11", "fecha": "VIE 12 - 21:00", "partido": "Canadá - Bosnia y Herz.", "pron": ["", "", "", ""], "res": ""}, {"id": "p12", "fecha": "SÁB 13 - 03:00", "partido": "Estados Unidos - Paraguay", "pron": ["", "", "", ""], "res": ""}, {"id": "p13", "fecha": "SÁB 13 - 21:00", "partido": "Catar - Suiza", "pron": ["", "", "", ""], "res": ""}, {"id": "p14", "fecha": "DOM 14 - 00:00", "partido": "Brasil - Marruecos", "pron": ["", "", "", ""], "res": ""}, {"id": "p15", "fecha": "DOM 14 - 03:00", "partido": "Haití - Escocia", "pron": ["", "", "", ""], "res": ""}, {"id": "p16", "fecha": "DOM 14 - 06:00", "partido": "Australia - Turquía", "pron": ["", "", "", ""], "res": ""}, {"id": "p17", "fecha": "DOM 14 - 19:00", "partido": "Alemania - Curazao", "pron": ["", "", "", ""], "res": ""}, {"id": "p18", "fecha": "DOM 14 - 22:00", "partido": "Países Bajos - Japón", "pron": ["", "", "", ""], "res": ""}, {"id": "p19", "fecha": "LUN 15 - 01:00", "partido": "Costa de Marfil - Ecuador", "pron": ["", "", "", ""], "res": ""}, {"id": "p20", "fecha": "LUN 15 - 04:00", "partido": "Suecia - Túnez", "pron": ["", "", "", ""], "res": ""}, {"id": "p21", "fecha": "LUN 15 - 18:00", "partido": "España - Cabo Verde", "pron": ["", "", "", ""], "res": ""}, {"id": "p22", "fecha": "LUN 15 - 21:00", "partido": "Bélgica - Egipto", "pron": ["", "", "", ""], "res": ""}, {"id": "p23", "fecha": "MAR 16 - 00:00", "partido": "Arabia Saudí - Uruguay", "pron": ["", "", "", ""], "res": ""}, {"id": "p24", "fecha": "MAR 16 - 03:00", "partido": "Irán - Nueva Zelanda", "pron": ["", "", "", ""], "res": ""}, {"id": "p25", "fecha": "MAR 16 - 21:00", "partido": "Francia - Senegal", "pron": ["", "", "", ""], "res": ""}, {"id": "p26", "fecha": "MIÉ 17 - 00:00", "partido": "Irak - Noruega", "pron": ["", "", "", ""], "res": ""}, {"id": "p27", "fecha": "MIÉ 17 - 03:00", "partido": "Argentina - Argelia", "pron": ["", "", "", ""], "res": ""}, {"id": "p28", "fecha": "MIÉ 17 - 06:00", "partido": "Austria - Jordania", "pron": ["", "", "", ""], "res": ""}, {"id": "p29", "fecha": "MIÉ 17 - 19:00", "partido": "Portugal - Congo RD", "pron": ["", "", "", ""], "res": ""}, {"id": "p30", "fecha": "MIÉ 17 - 22:00", "partido": "Inglaterra - Croacia", "pron": ["", "", "", ""], "res": ""}, {"id": "p31", "fecha": "JUE 18 - 01:00", "partido": "Ghana - Panamá", "pron": ["", "", "", ""], "res": ""}, {"id": "p32", "fecha": "JUE 18 - 04:00", "partido": "Uzbekistán - Colombia", "pron": ["", "", "", ""], "res": ""}]}, {"nombre": "JORNADA 2", "partidos": [{"id": "p35", "fecha": "JUE 18 - 18:00", "partido": "Chequia - Sudáfrica", "pron": ["", "", "", ""], "res": ""}, {"id": "p36", "fecha": "JUE 18 - 21:00", "partido": "Suiza - Bosnia y Herz.", "pron": ["", "", "", ""], "res": ""}, {"id": "p37", "fecha": "VIE 19 - 00:00", "partido": "Canadá - Catar", "pron": ["", "", "", ""], "res": ""}, {"id": "p38", "fecha": "VIE 19 - 03:00", "partido": "México - Corea del Sur", "pron": ["", "", "", ""], "res": ""}, {"id": "p39", "fecha": "VIE 19 - 21:00", "partido": "Estados Unidos - Australia", "pron": ["", "", "", ""], "res": ""}, {"id": "p40", "fecha": "SÁB 20 - 00:00", "partido": "Escocia - Marruecos", "pron": ["", "", "", ""], "res": ""}, {"id": "p41", "fecha": "SÁB 20 - 02:30", "partido": "Brasil - Haití", "pron": ["", "", "", ""], "res": ""}, {"id": "p42", "fecha": "SÁB 20 - 05:00", "partido": "Turquía - Paraguay", "pron": ["", "", "", ""], "res": ""}, {"id": "p43", "fecha": "SÁB 20 - 19:00", "partido": "Países Bajos - Suecia", "pron": ["", "", "", ""], "res": ""}, {"id": "p44", "fecha": "SÁB 20 - 22:00", "partido": "Alemania - Costa de Marfil", "pron": ["", "", "", ""], "res": ""}, {"id": "p45", "fecha": "DOM 21 - 02:00", "partido": "Ecuador - Curazao", "pron": ["", "", "", ""], "res": ""}, {"id": "p46", "fecha": "DOM 21 - 06:00", "partido": "Túnez - Japón", "pron": ["", "", "", ""], "res": ""}, {"id": "p47", "fecha": "DOM 21 - 18:00", "partido": "España - Arabia Saudí", "pron": ["", "", "", ""], "res": ""}, {"id": "p48", "fecha": "DOM 21 - 21:00", "partido": "Bélgica - Irán", "pron": ["", "", "", ""], "res": ""}, {"id": "p49", "fecha": "LUN 22 - 00:00", "partido": "Uruguay - Cabo Verde", "pron": ["", "", "", ""], "res": ""}, {"id": "p50", "fecha": "LUN 22 - 03:00", "partido": "Nueva Zelanda - Egipto", "pron": ["", "", "", ""], "res": ""}, {"id": "p51", "fecha": "LUN 22 - 19:00", "partido": "Argentina - Austria", "pron": ["", "", "", ""], "res": ""}, {"id": "p52", "fecha": "LUN 22 - 23:00", "partido": "Francia - Irak", "pron": ["", "", "", ""], "res": ""}, {"id": "p53", "fecha": "MAR 23 - 02:00", "partido": "Noruega - Senegal", "pron": ["", "", "", ""], "res": ""}, {"id": "p54", "fecha": "MAR 23 - 05:00", "partido": "Jordania - Argelia", "pron": ["", "", "", ""], "res": ""}, {"id": "p55", "fecha": "MAR 23 - 19:00", "partido": "Portugal - Uzbekistán", "pron": ["", "", "", ""], "res": ""}, {"id": "p56", "fecha": "MAR 23 - 22:00", "partido": "Inglaterra - Ghana", "pron": ["", "", "", ""], "res": ""}, {"id": "p57", "fecha": "MIÉ 24 - 01:00", "partido": "Panamá - Croacia", "pron": ["", "", "", ""], "res": ""}, {"id": "p58", "fecha": "MIÉ 24 - 04:00", "partido": "Colombia - Congo RD", "pron": ["", "", "", ""], "res": ""}]}, {"nombre": "JORNADA 3", "partidos": [{"id": "p61", "fecha": "MIÉ 24 - 21:00", "partido": "Bosnia y Herz. - Catar", "pron": ["", "", "", ""], "res": ""}, {"id": "p62", "fecha": "MIÉ 24 - 21:00", "partido": "Suiza - Canadá", "pron": ["", "", "", ""], "res": ""}, {"id": "p63", "fecha": "JUE 25 - 00:00", "partido": "Escocia - Brasil", "pron": ["", "", "", ""], "res": ""}, {"id": "p64", "fecha": "JUE 25 - 00:00", "partido": "Marruecos - Haití", "pron": ["", "", "", ""], "res": ""}, {"id": "p65", "fecha": "JUE 25 - 03:00", "partido": "Chequia - México", "pron": ["", "", "", ""], "res": ""}, {"id": "p66", "fecha": "JUE 25 - 03:00", "partido": "Sudáfrica - Corea del Sur", "pron": ["", "", "", ""], "res": ""}, {"id": "p67", "fecha": "JUE 25 - 22:00", "partido": "Ecuador - Alemania", "pron": ["", "", "", ""], "res": ""}, {"id": "p68", "fecha": "JUE 25 - 22:00", "partido": "Curazao - Costa de Marfil", "pron": ["", "", "", ""], "res": ""}, {"id": "p69", "fecha": "VIE 26 - 01:00", "partido": "Japón - Suecia", "pron": ["", "", "", ""], "res": ""}, {"id": "p70", "fecha": "VIE 26 - 01:00", "partido": "Túnez - Países Bajos", "pron": ["", "", "", ""], "res": ""}, {"id": "p71", "fecha": "VIE 26 - 04:00", "partido": "Turquía - Estados Unidos", "pron": ["", "", "", ""], "res": ""}, {"id": "p72", "fecha": "VIE 26 - 04:00", "partido": "Paraguay - Australia", "pron": ["", "", "", ""], "res": ""}, {"id": "p73", "fecha": "VIE 26 - 21:00", "partido": "Senegal - Irak", "pron": ["", "", "", ""], "res": ""}, {"id": "p74", "fecha": "VIE 26 - 21:00", "partido": "Noruega - Francia", "pron": ["", "", "", ""], "res": ""}, {"id": "p75", "fecha": "SÁB 27 - 02:00", "partido": "Uruguay - España", "pron": ["", "", "", ""], "res": ""}, {"id": "p76", "fecha": "SÁB 27 - 02:00", "partido": "Cabo Verde - Arabia Saudí", "pron": ["", "", "", ""], "res": ""}, {"id": "p77", "fecha": "SÁB 27 - 05:00", "partido": "Nueva Zelanda - Bélgica", "pron": ["", "", "", ""], "res": ""}, {"id": "p78", "fecha": "SÁB 27 - 05:00", "partido": "Egipto - Irán", "pron": ["", "", "", ""], "res": ""}, {"id": "p79", "fecha": "SÁB 27 - 23:00", "partido": "Croacia - Ghana", "pron": ["", "", "", ""], "res": ""}, {"id": "p80", "fecha": "SÁB 27 - 23:00", "partido": "Panamá - Inglaterra", "pron": ["", "", "", ""], "res": ""}, {"id": "p81", "fecha": "DOM 28 - 01:30", "partido": "Colombia - Portugal", "pron": ["", "", "", ""], "res": ""}, {"id": "p82", "fecha": "DOM 28 - 01:30", "partido": "Congo RD - Uzbekistán", "pron": ["", "", "", ""], "res": ""}, {"id": "p83", "fecha": "DOM 28 - 04:00", "partido": "Argelia - Austria", "pron": ["", "", "", ""], "res": ""}, {"id": "p84", "fecha": "DOM 28 - 04:00", "partido": "Jordania - Argentina", "pron": ["", "", "", ""], "res": ""}]}, {"nombre": "DIECISEISAVOS", "partidos": [{"id": "p90", "fecha": "DOM 28 - 21:00", "partido": "2º Gr. A - 2º Gr. B (P73)", "pron": ["", "", "", ""], "res": ""}, {"id": "p91", "fecha": "LUN 29 - 19:00", "partido": "1º Gr. C - 2º Gr. F (P76)", "pron": ["", "", "", ""], "res": ""}, {"id": "p92", "fecha": "LUN 29 - 22:30", "partido": "1º Gr. E - 3º A/B/C/D/F (P74)", "pron": ["", "", "", ""], "res": ""}, {"id": "p93", "fecha": "MAR 30 - 03:00", "partido": "1º Gr. F - 2º Gr. C (P75)", "pron": ["", "", "", ""], "res": ""}, {"id": "p94", "fecha": "MAR 30 - 19:00", "partido": "2º Gr. E - 2º Gr. I (P78)", "pron": ["", "", "", ""], "res": ""}, {"id": "p95", "fecha": "MAR 30 - 23:00", "partido": "1º Gr. I - 3º C/D/F/G/H (P77)", "pron": ["", "", "", ""], "res": ""}, {"id": "p96", "fecha": "MIÉ 01 - 03:00", "partido": "1º Gr. A - 3º C/E/F/H/I (P79)", "pron": ["", "", "", ""], "res": ""}, {"id": "p97", "fecha": "MIÉ 01 - 18:00", "partido": "1º Gr. L - 3º E/H/I/J/K (P80)", "pron": ["", "", "", ""], "res": ""}, {"id": "p98", "fecha": "MIÉ 01 - 22:00", "partido": "1º Gr. G - 3º A/E/H/I/J (P82)", "pron": ["", "", "", ""], "res": ""}, {"id": "p99", "fecha": "JUE 02 - 02:00", "partido": "1º Gr. D - 3º B/E/F/I/J (P81)", "pron": ["", "", "", ""], "res": ""}, {"id": "p100", "fecha": "JUE 02 - 21:00", "partido": "1º Gr. H - 2º Gr. J (P84)", "pron": ["", "", "", ""], "res": ""}, {"id": "p101", "fecha": "VIE 03 - 01:00", "partido": "2º Gr. K - 2º Gr. L (P83)", "pron": ["", "", "", ""], "res": ""}, {"id": "p102", "fecha": "VIE 03 - 05:00", "partido": "1º Gr. B - 3º E/F/G/I/J (P85)", "pron": ["", "", "", ""], "res": ""}, {"id": "p103", "fecha": "VIE 03 - 20:00", "partido": "2º Gr. D - 2º Gr. G (P88)", "pron": ["", "", "", ""], "res": ""}, {"id": "p104", "fecha": "SÁB 04 - 00:00", "partido": "1º Gr. J - 2º Gr. H (P86)", "pron": ["", "", "", ""], "res": ""}, {"id": "p105", "fecha": "SÁB 04 - 03:30", "partido": "1º Gr. K - 3º D/E/I/J/L (P87)", "pron": ["", "", "", ""], "res": ""}]}, {"nombre": "OCTAVOS DE FINAL", "partidos": [{"id": "p108", "fecha": "SÁB 04 - 19:00", "partido": "Ganador P73 - Ganador P75 (P90)", "pron": ["", "", "", ""], "res": ""}, {"id": "p109", "fecha": "SÁB 04 - 23:00", "partido": "Ganador P74 - Ganador P77 (P89)", "pron": ["", "", "", ""], "res": ""}, {"id": "p110", "fecha": "DOM 05 - 22:00", "partido": "Ganador P76 - Ganador P78 (P91)", "pron": ["", "", "", ""], "res": ""}, {"id": "p111", "fecha": "LUN 06 - 02:00", "partido": "Ganador P79 - Ganador P80 (P92)", "pron": ["", "", "", ""], "res": ""}, {"id": "p112", "fecha": "LUN 06 - 21:00", "partido": "Ganador P83 - Ganador P84 (P93)", "pron": ["", "", "", ""], "res": ""}, {"id": "p113", "fecha": "MAR 07 - 02:00", "partido": "Ganador P81 - Ganador P82 (P94)", "pron": ["", "", "", ""], "res": ""}, {"id": "p114", "fecha": "MAR 07 - 18:00", "partido": "Ganador P86 - Ganador P88 (P95)", "pron": ["", "", "", ""], "res": ""}, {"id": "p115", "fecha": "MAR 07 - 22:00", "partido": "Ganador P85 - Ganador P87 (P96)", "pron": ["", "", "", ""], "res": ""}]}, {"nombre": "CUARTOS DE FINAL", "partidos": [{"id": "p118", "fecha": "JUE 09 - 22:00", "partido": "Ganador P89 - Ganador P90 (P97)", "pron": ["", "", "", ""], "res": ""}, {"id": "p119", "fecha": "VIE 10 - 21:00", "partido": "Ganador P93 - Ganador P94 (P98)", "pron": ["", "", "", ""], "res": ""}, {"id": "p120", "fecha": "SÁB 11 - 23:00", "partido": "Ganador P91 - Ganador P92 (P99)", "pron": ["", "", "", ""], "res": ""}, {"id": "p121", "fecha": "DOM 12 - 03:00", "partido": "Ganador P95 - Ganador P96 (P100)", "pron": ["", "", "", ""], "res": ""}]}, {"nombre": "SEMIFINALES", "partidos": [{"id": "p124", "fecha": "MAR 14 - 21:00", "partido": "Ganador P97 - Ganador P98 (P101)", "pron": ["", "", "", ""], "res": ""}, {"id": "p125", "fecha": "MIÉ 15 - 21:00", "partido": "Ganador P99 - Ganador P100 (P102)", "pron": ["", "", "", ""], "res": ""}]}, {"nombre": "FINALES", "partidos": [{"id": "p128", "fecha": "SÁB 18 - 23:00", "partido": "TERCER Y CUARTO PUESTO", "pron": ["", "", "", ""], "res": ""}, {"id": "p129", "fecha": "DOM 19 - 21:00", "partido": "GRAN FINAL", "pron": ["", "", "", ""], "res": ""}]}]};
+
+let JUGADORES = SEED.jugadores;
+let datos = null;          // estado actual {secciones:[...]}
+let db = null, refPorra = null;
+
+const $ = s => document.querySelector(s);
+const toast = (msg, esError=false) => {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.className = 'visible' + (esError ? ' err' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = '', 2400);
+};
+const estado = (txt, online) => {
+  $('#estado').textContent = txt;
+  $('#punto').classList.toggle('online', !!online);
+};
+
+/* ---------- puntuación ---------- */
+function parsear(s){
+  const m = /^\s*(\d{1,2})\s*-\s*(\d{1,2})\s*$/.exec(s || '');
+  return m ? [+m[1], +m[2]] : null;
+}
+function normaliza(s){ const m = parsear(s); return m ? `${m[0]} - ${m[1]}` : ''; }
+function puntos(pron, res){
+  const p = parsear(pron), r = parsear(res);
+  if (!p || !r) return null;
+  if (p[0]===r[0] && p[1]===r[1]) return 3;
+  const sg = x => Math.sign(x[0]-x[1]);
+  return sg(p)===sg(r) ? 1 : 0;
+}
+function totales(){
+  const t = [0,0,0,0];
+  datos.secciones.forEach(s => s.partidos.forEach(p => {
+    p.pron.forEach((pr,i) => { const pt = puntos(pr, p.res); if (pt) t[i]+=pt; });
+  }));
+  return t;
+}
+
+/* ---------- render ---------- */
+function claseAcierto(pt){ return pt===3?'exacto':pt===1?'signo':pt===0?'fallo':''; }
+
+function pintarMarcador(){
+  const panel = $('#marcador');
+  panel.querySelectorAll('.jugador').forEach(e => e.remove());
+  const t = totales();
+  const max = Math.max(...t);
+  JUGADORES.forEach((nombre,i) => {
+    const div = document.createElement('div');
+    const lider = t[i]===max && max>0;
+    div.className = 'jugador' + (lider?' lider':'');
+    div.innerHTML = `<div class="nombre">${nombre}</div><div class="pts">${t[i]}</div>
+      <div class="etiqueta">${lider?'★ líder':'puntos'}</div>`;
+    panel.appendChild(div);
+  });
+}
+
+function pintarTodo(){
+  const nav = $('#nav'), main = $('#contenido');
+  nav.innerHTML = ''; main.innerHTML = '';
+  datos.secciones.forEach((sec,idx) => {
+    const id = 'sec-'+idx;
+    const btn = document.createElement('button');
+    btn.textContent = sec.nombre;
+    btn.onclick = () => {
+      $('#'+id).scrollIntoView({behavior:'smooth',block:'start'});
+      nav.querySelectorAll('button').forEach(b=>b.classList.remove('activo'));
+      btn.classList.add('activo');
+    };
+    if (idx===0) btn.classList.add('activo');
+    nav.appendChild(btn);
+
+    const section = document.createElement('section');
+    section.id = id; section.style.scrollMarginTop = '4rem';
+    section.innerHTML = `<div class="cabecera-seccion"><h2>${sec.nombre}</h2></div>
+      <div class="encabezados"><div>Fecha</div><div>Partido</div>
+      ${JUGADORES.map(j=>`<div>${j}</div>`).join('')}<div class="res">Result.</div></div>`;
+
+    sec.partidos.forEach(p => {
+      const fila = document.createElement('div');
+      fila.className = 'partido';
+      fila.innerHTML = `
+        <div class="fecha">${p.fecha||''}</div>
+        <div class="equipos">${p.partido}</div>
+        ${JUGADORES.map((j,i)=>`<div class="celda" data-nombre="${j}">
+          <input value="${p.pron[i]||''}" placeholder="–" class="${claseAcierto(puntos(p.pron[i],p.res))}"
+            data-id="${p.id}" data-campo="${i}" inputmode="numeric"
+            aria-label="Pronóstico de ${j} para ${p.partido}"></div>`).join('')}
+        <div class="celda resultado" data-nombre="Result.">
+          <input value="${p.res||''}" placeholder="–" data-id="${p.id}" data-campo="res"
+            inputmode="numeric" aria-label="Resultado de ${p.partido}"></div>`;
+      section.appendChild(fila);
+    });
+    main.appendChild(section);
+  });
+  enlazarInputs();
+}
+
+function enlazarInputs(){
+  document.querySelectorAll('#contenido input').forEach(inp => {
+    inp.dataset.original = inp.value;
+    inp.addEventListener('blur', () => guardar(inp));
+    inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
+  });
+}
+
+function buscarPartido(id){
+  for (const s of datos.secciones){ const p = s.partidos.find(p=>p.id===id); if (p) return p; }
+  return null;
+}
+
+/* Refresca valores/colores sin reconstruir el DOM (no roba el foco) */
+function refrescar(){
+  document.querySelectorAll('#contenido input').forEach(inp => {
+    const p = buscarPartido(inp.dataset.id); if (!p) return;
+    const campo = inp.dataset.campo;
+    const valor = campo==='res' ? (p.res||'') : (p.pron[+campo]||'');
+    if (document.activeElement !== inp && inp.value !== valor){
+      inp.value = valor;
+      inp.classList.add('flash');
+      setTimeout(()=>inp.classList.remove('flash'),600);
+    }
+    inp.dataset.original = valor;
+    if (campo!=='res') inp.className = claseAcierto(puntos(p.pron[+campo], p.res));
+  });
+  pintarMarcador();
+}
+
+/* ---------- guardado en Firebase ---------- */
+async function guardar(inp){
+  const valor = inp.value.trim();
+  if (valor === inp.dataset.original.trim()) return;
+  inp.classList.remove('error');
+  if (valor && !parsear(valor)){
+    inp.classList.add('error');
+    toast('Formato no válido. Usa por ejemplo: 2 - 1', true);
+    return;
+  }
+  const limpio = normaliza(valor);
+  inp.value = limpio;
+  const p = buscarPartido(inp.dataset.id); if (!p) return;
+  const campo = inp.dataset.campo;
+  if (campo==='res') p.res = limpio; else p.pron[+campo] = limpio;
+  inp.dataset.original = limpio;
+  if (campo!=='res') inp.className = claseAcierto(puntos(p.pron[+campo], p.res));
+  pintarMarcador();
+
+  if (!refPorra){ toast('Modo local: configura Firebase para guardar online', true); return; }
+  try{
+    await set(refPorra, datos);
+    toast('Guardado ✓');
+  }catch(e){
+    inp.classList.add('error');
+    toast('No se pudo guardar online: ' + e.message, true);
+  }
+}
+
+/* ---------- descarga de Excel ---------- */
+function descargarExcel(){
+  const cab = ['Fecha','Partido',...JUGADORES,'Resultado'];
+  const aoa = [];
+  const puntosAoa = [['', ...JUGADORES]];
+  const acum = [0,0,0,0];
+  datos.secciones.forEach(sec => {
+    aoa.push([sec.nombre]);
+    aoa.push(cab);
+    const sub = [0,0,0,0];
+    sec.partidos.forEach(p => {
+      aoa.push([p.fecha, p.partido, ...p.pron, p.res]);
+      p.pron.forEach((pr,i)=>{ const pt=puntos(pr,p.res); if(pt){sub[i]+=pt;acum[i]+=pt;} });
+    });
+    aoa.push(['', 'PUNTOS '+sec.nombre, ...sub]);
+    aoa.push([]);
+    puntosAoa.push([sec.nombre, ...sub]);
+  });
+  puntosAoa.push([]);
+  puntosAoa.push(['TOTAL', ...acum]);
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), 'PARTIDOS');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(puntosAoa), 'PUNTOS');
+  XLSX.writeFile(wb, 'MUNDIAL_2026.xlsx');
+}
+$('#btnExcel').addEventListener('click', descargarExcel);
+
+/* ---------- arranque ---------- */
+function sinConfigurar(){
+  return firebaseConfig.apiKey.startsWith('PEGA_AQUI');
+}
+
+function arrancarLocal(motivo){
+  datos = structuredClone(SEED);
+  $('#avisoConfig').style.display = 'block';
+  $('#avisoConfig').className = 'aviso-config';
+  $('#avisoConfig').innerHTML = motivo;
+  estado('Modo local (sin guardar)', false);
+  pintarMarcador(); pintarTodo();
+}
+
+async function arrancar(){
+  if (sinConfigurar()){
+    arrancarLocal('⚠️ <strong>Firebase sin configurar.</strong> La porra se ve, pero los cambios no se guardan. '
+      + 'Edita el bloque <code>firebaseConfig</code> dentro de <code>index.html</code> con los datos de tu proyecto '
+      + '(tienes las instrucciones en el archivo LEEME).');
+    return;
+  }
+  try{
+    const app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    refPorra = ref(db, 'porra');
+
+    // Semilla la primera vez (si la base está vacía)
+    const snap = await get(refPorra);
+    if (!snap.exists()){
+      datos = structuredClone(SEED);
+      await set(refPorra, datos);
+    }
+
+    // Escucha en tiempo real
+    onValue(refPorra, (s) => {
+      const v = s.val();
+      if (!v){ return; }
+      // Asegura estructura de arrays (Firebase puede comprimir arrays con huecos)
+      datos = v;
+      datos.secciones = datos.secciones || [];
+      datos.secciones.forEach(sec => {
+        sec.partidos = sec.partidos || [];
+        sec.partidos.forEach(p => { p.pron = p.pron || ['','','','']; while(p.pron.length<4) p.pron.push(''); });
+      });
+      if (!$('#contenido').children.length){ pintarMarcador(); pintarTodo(); }
+      else refrescar();
+      estado('En línea · sincronizado', true);
+    }, (err) => {
+      toast('Error de conexión: ' + err.message, true);
+      estado('Sin conexión', false);
+    });
+  }catch(e){
+    arrancarLocal('⚠️ <strong>No se pudo conectar a Firebase.</strong> Revisa que los datos de '
+      + '<code>firebaseConfig</code> sean correctos. Detalle: ' + e.message);
+  }
+}
+arrancar();
+</script>
+</body>
+</html>
