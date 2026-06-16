@@ -56,7 +56,7 @@ section{margin-bottom:2.6rem}
 .cabecera-seccion h2{font-family:'Archivo Black',sans-serif;font-size:1.05rem;text-transform:uppercase;letter-spacing:.04em;color:var(--campo);white-space:nowrap}
 .cabecera-seccion::after{content:"";flex:1;height:2px;background:var(--linea)}
 
-.encabezados{display:grid;grid-template-columns:5.2rem 1fr repeat(5,4.4rem);gap:.45rem;align-items:end;padding:0 .6rem .35rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+.encabezados{position:sticky;top:var(--nav-h,3.1rem);z-index:4;display:grid;grid-template-columns:5.2rem 1fr repeat(5,4.4rem);gap:.45rem;align-items:end;padding:.5rem .6rem .35rem;background:var(--cal);border-bottom:1px solid var(--linea);font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
 .encabezados div:nth-child(n+3){text-align:center}
 .encabezados .res{color:var(--campo);font-weight:700}
 
@@ -103,7 +103,7 @@ section{margin-bottom:2.6rem}
 <body>
 
 <header>
-  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.1)</div>
+  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.2)</div>
   <p class="eyebrow">Mundial 2026 · México · EE. UU. · Canadá</p>
   <h1>La Gran Purria<br><span>Porra</span></h1>
   <div class="circulo" aria-hidden="true">⚽</div>
@@ -251,7 +251,18 @@ function pintarTodo(){
     main.appendChild(section);
   });
   enlazarInputs();
+  ajustarAlturaNav();
 }
+
+/* Coloca la cabecera de columnas justo debajo de la barra de fases,
+   midiendo su altura real (se adapta a la pantalla y a la fuente). */
+function ajustarAlturaNav(){
+  const nav = $('#nav');
+  if (!nav) return;
+  const h = nav.getBoundingClientRect().height;
+  document.documentElement.style.setProperty('--nav-h', h + 'px');
+}
+window.addEventListener('resize', ajustarAlturaNav);
 
 function enlazarInputs(){
   document.querySelectorAll('#contenido input').forEach(inp => {
