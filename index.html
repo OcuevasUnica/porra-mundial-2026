@@ -111,10 +111,20 @@ section{margin-bottom:2.6rem}
 .login-pass .login-link{display:inline-block;margin-top:.9rem;cursor:pointer;font-size:.78rem;color:var(--gris);background:none;border:none;text-decoration:underline}
 .login-error{color:#b32626;font-size:.8rem;font-weight:500;margin-top:.6rem;min-height:1rem}
 
-.sesion{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--gris);display:inline-flex;align-items:center;gap:.5rem;margin-right:auto}
+.barra-izq{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin-right:auto}
+.sesion{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--gris);display:inline-flex;align-items:center;gap:.5rem}
 .sesion b{color:var(--campo)}
 .sesion button{cursor:pointer;font:inherit;font-size:.7rem;border:1px solid var(--linea);border-radius:999px;background:#fff;color:var(--gris);padding:.2rem .6rem}
 .sesion button:hover{border-color:var(--campo);color:var(--campo)}
+/* interruptor modo admin (solo Óscar) */
+.admin-switch{display:inline-flex;align-items:center;gap:.45rem;cursor:pointer;user-select:none;font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.04em;color:var(--gris)}
+.admin-switch input{position:absolute;opacity:0;width:0;height:0}
+.admin-switch .track{width:34px;height:18px;border-radius:999px;background:#cdd6cf;position:relative;transition:background .2s}
+.admin-switch .thumb{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.admin-switch input:checked + .track{background:var(--oro)}
+.admin-switch input:checked + .track .thumb{transform:translateX(16px)}
+.admin-switch input:focus-visible + .track{box-shadow:0 0 0 3px rgba(245,184,46,.4)}
+.admin-switch.activo{color:#8a6508;font-weight:700}
 
 .leyenda{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--gris);margin-top:2rem;padding-bottom:2rem}
 .leyenda span::before{content:"";display:inline-block;width:.7rem;height:.7rem;border-radius:3px;margin-right:.35rem;vertical-align:-1px}
@@ -144,7 +154,7 @@ section{margin-bottom:2.6rem}
 <body>
 
 <header>
-  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.5)</div>
+  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.6)</div>
   <p class="eyebrow">Mundial 2026 · México · EE. UU. · Canadá</p>
   <h1>La Gran Purria<br><span>Porra</span></h1>
   <div class="circulo" aria-hidden="true">⚽</div>
@@ -159,8 +169,15 @@ section{margin-bottom:2.6rem}
 </div>
 
 <div class="barra">
-  <span class="sesion" id="sesion" style="display:none">Conectado como <b id="sesionNombre"></b>
-    <button id="btnCambiar" type="button">cambiar</button></span>
+  <div class="barra-izq">
+    <span class="sesion" id="sesion" style="display:none">Conectado como <b id="sesionNombre"></b>
+      <button id="btnCambiar" type="button">cambiar</button></span>
+    <label class="admin-switch" id="adminSwitch" style="display:none">
+      <input type="checkbox" id="adminCheck">
+      <span class="track"><span class="thumb"></span></span>
+      <span class="lbl">Modo admin</span>
+    </label>
+  </div>
   <button id="btnExcel" type="button">⬇ Descargar Excel</button>
 </div>
 
@@ -240,6 +257,7 @@ function bloqueado(id){
 // ---------- sesión / permisos ----------
 let usuario = null;   // nombre del jugador conectado
 const ADMIN = 'Óscar'; // único que puede rellenar la columna RESULT.
+let modoAdmin = false; // escritura total para Óscar (interruptor); arranca apagado
 
 // Hash SHA-256 (con sal fija) usando la API del navegador, sin librerías.
 async function hashClave(texto){
@@ -251,6 +269,7 @@ async function hashClave(texto){
 // ¿Puede el usuario actual editar esta casilla?
 function editable(id, campo){
   if (!usuario) return false;
+  if (usuario === ADMIN && modoAdmin) return true;        // admin: escritura total
   if (campo === 'res') return usuario === ADMIN;          // RESULT. solo Óscar
   return JUGADORES[+campo] === usuario && !bloqueado(id); // tu columna y sin empezar
 }
@@ -475,7 +494,7 @@ function aplicarBloqueos(){
     inp.disabled = !ed;
     const celda = inp.closest('.celda');
     const propio = campo !== 'res' && JUGADORES[+campo] === usuario;
-    const porTiempo = propio && bloqueado(id);
+    const porTiempo = !ed && propio && bloqueado(id);      // candado solo si no editable
     celda.classList.toggle('mia', propio);                 // resalta tu columna
     celda.classList.toggle('bloqueada', porTiempo);        // candado: ya empezó
     celda.classList.toggle('ajena', !ed && !porTiempo);    // de otro / no permitida
@@ -574,9 +593,15 @@ const CLAVE_SESION = 'porra_usuario';
 let seleccionado = null;   // usuario elegido en el paso de contraseña
 
 function mostrarSesion(){
-  if (!usuario) { $('#sesion').style.display = 'none'; return; }
+  if (!usuario) {
+    $('#sesion').style.display = 'none';
+    $('#adminSwitch').style.display = 'none';
+    return;
+  }
   $('#sesion').style.display = 'inline-flex';
   $('#sesionNombre').textContent = usuario + (usuario === ADMIN ? ' (admin)' : '');
+  // El interruptor de modo admin solo lo ve Óscar
+  $('#adminSwitch').style.display = (usuario === ADMIN) ? 'inline-flex' : 'none';
 }
 
 function abrirLogin(){
@@ -646,6 +671,7 @@ async function enviarLogin(){
 
 function entrar(nombre){
   usuario = nombre;
+  desactivarAdmin();   // siempre arranca con modo admin apagado
   try { localStorage.setItem(CLAVE_SESION, nombre); } catch(e){}
   $('#login').style.display = 'none';
   mostrarSesion();
@@ -654,10 +680,28 @@ function entrar(nombre){
 
 function cerrarSesion(){
   usuario = null;
+  desactivarAdmin();
   try { localStorage.removeItem(CLAVE_SESION); } catch(e){}
   mostrarSesion();
   abrirLogin();
 }
+
+// Apaga el modo admin y refleja el estado en el interruptor.
+function desactivarAdmin(){
+  modoAdmin = false;
+  const chk = $('#adminCheck');
+  if (chk) chk.checked = false;
+  $('#adminSwitch').classList.remove('activo');
+}
+
+// Interruptor de modo admin (solo activo para Óscar).
+$('#adminCheck').addEventListener('change', (e) => {
+  if (usuario !== ADMIN){ e.target.checked = false; return; }
+  modoAdmin = e.target.checked;
+  $('#adminSwitch').classList.toggle('activo', modoAdmin);
+  aplicarBloqueos();
+  toast(modoAdmin ? 'Modo admin activado: edición total' : 'Modo admin desactivado');
+});
 
 $('#loginBtn').addEventListener('click', enviarLogin);
 $('#loginInput').addEventListener('keydown', e => { if (e.key==='Enter' && $('#loginInput2').style.display==='none') enviarLogin(); });
@@ -681,6 +725,7 @@ function iniciarSesion(){
   try { recordado = localStorage.getItem(CLAVE_SESION); } catch(e){}
   if (recordado && JUGADORES.includes(recordado)){
     usuario = recordado;
+    desactivarAdmin();
     mostrarSesion();
     if (datos){ pintarMarcador(); pintarTodo(); }
   } else {
