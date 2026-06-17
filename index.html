@@ -80,7 +80,30 @@ section{margin-bottom:2.6rem}
 .celda.bloqueada input.signo{background:#fdf4dd;color:#8a6508;border-style:dashed}
 .celda.bloqueada input.fallo{background:#f1f4f0;border-style:dashed}
 .celda.bloqueada::after{content:"🔒";position:absolute;top:-.15rem;right:.05rem;font-size:.6rem;opacity:.5}
+.celda.mia input{box-shadow:inset 0 0 0 1.5px rgba(20,83,45,.35)}
+.celda.ajena input{background:#f1f3f1;color:#9aa7a0;border-style:dotted}
 @keyframes flash{0%{background:#fff7da}100%{}}
+
+/* ---------- login ---------- */
+.login-overlay{position:fixed;inset:0;z-index:50;background:rgba(12,59,31,.82);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:1.2rem}
+.login-card{background:#fff;border-radius:14px;max-width:380px;width:100%;padding:1.8rem 1.6rem;box-shadow:0 24px 60px -20px rgba(0,0,0,.5);text-align:center}
+.login-card .login-eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gris);margin-bottom:.5rem}
+.login-card h2{font-family:'Archivo Black',sans-serif;font-size:1.2rem;color:var(--campo);text-transform:uppercase;margin-bottom:1.2rem}
+.login-usuarios{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.login-usuarios button{cursor:pointer;font:inherit;font-weight:600;font-size:.95rem;border:1.5px solid var(--linea);border-radius:10px;background:var(--cal);color:var(--tinta);padding:.9rem .3rem;transition:all .15s ease}
+.login-usuarios button:hover{border-color:var(--campo);background:#fff;transform:translateY(-1px)}
+.login-pass p{font-size:.88rem;color:var(--tinta);margin-bottom:.9rem;line-height:1.4}
+.login-pass input{width:100%;font:inherit;font-size:1rem;text-align:center;border:1.5px solid var(--linea);border-radius:9px;padding:.6rem;margin-bottom:.6rem;background:var(--cal)}
+.login-pass input:focus{outline:none;border-color:var(--campo);background:#fff;box-shadow:0 0 0 3px rgba(20,83,45,.12)}
+.login-pass .login-btn{width:100%;cursor:pointer;font:inherit;font-weight:700;font-size:.95rem;border:none;border-radius:9px;background:var(--campo);color:#fff;padding:.7rem;margin-top:.2rem;transition:background .15s}
+.login-pass .login-btn:hover{background:var(--campo-osc)}
+.login-pass .login-link{display:inline-block;margin-top:.9rem;cursor:pointer;font-size:.78rem;color:var(--gris);background:none;border:none;text-decoration:underline}
+.login-error{color:#b32626;font-size:.8rem;font-weight:500;margin-top:.6rem;min-height:1rem}
+
+.sesion{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--gris);display:inline-flex;align-items:center;gap:.5rem;margin-right:auto}
+.sesion b{color:var(--campo)}
+.sesion button{cursor:pointer;font:inherit;font-size:.7rem;border:1px solid var(--linea);border-radius:999px;background:#fff;color:var(--gris);padding:.2rem .6rem}
+.sesion button:hover{border-color:var(--campo);color:var(--campo)}
 
 .leyenda{display:flex;gap:1.2rem;flex-wrap:wrap;justify-content:center;font-size:.72rem;color:var(--gris);margin-top:2rem;padding-bottom:2rem}
 .leyenda span::before{content:"";display:inline-block;width:.7rem;height:.7rem;border-radius:3px;margin-right:.35rem;vertical-align:-1px}
@@ -110,7 +133,7 @@ section{margin-bottom:2.6rem}
 <body>
 
 <header>
-  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.3)</div>
+  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.4)</div>
   <p class="eyebrow">Mundial 2026 · México · EE. UU. · Canadá</p>
   <h1>La Gran Purria<br><span>Porra</span></h1>
   <div class="circulo" aria-hidden="true">⚽</div>
@@ -123,7 +146,25 @@ section{margin-bottom:2.6rem}
 </div>
 
 <div class="barra">
+  <span class="sesion" id="sesion" style="display:none">Conectado como <b id="sesionNombre"></b>
+    <button id="btnCambiar" type="button">cambiar</button></span>
   <button id="btnExcel" type="button">⬇ Descargar Excel</button>
+</div>
+
+<div class="login-overlay" id="login" style="display:none">
+  <div class="login-card">
+    <div class="login-eyebrow">La Gran Purria Porra</div>
+    <h2 id="loginTitulo">¿Quién eres?</h2>
+    <div class="login-usuarios" id="loginUsuarios"></div>
+    <div class="login-pass" id="loginPass" style="display:none">
+      <p id="loginMsg"></p>
+      <input type="password" id="loginInput" placeholder="Contraseña" autocomplete="off">
+      <input type="password" id="loginInput2" placeholder="Repite la contraseña" autocomplete="off" style="display:none">
+      <button class="login-btn" id="loginBtn" type="button">Entrar</button>
+      <div class="login-error" id="loginError"></div>
+      <button class="login-link" id="loginVolver" type="button">← elegir otro usuario</button>
+    </div>
+  </div>
 </div>
 
 <div id="avisoConfig" style="display:none"></div>
@@ -181,6 +222,24 @@ const ahora = () => Date.now() + offsetReloj;
 function bloqueado(id){
   const ts = HORARIOS[id];
   return ts != null && ahora() >= ts;
+}
+
+// ---------- sesión / permisos ----------
+let usuario = null;   // nombre del jugador conectado
+const ADMIN = 'Óscar'; // único que puede rellenar la columna RESULT.
+
+// Hash SHA-256 (con sal fija) usando la API del navegador, sin librerías.
+async function hashClave(texto){
+  const datos = new TextEncoder().encode('porra-mundial-2026·' + texto);
+  const buf = await crypto.subtle.digest('SHA-256', datos);
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ¿Puede el usuario actual editar esta casilla?
+function editable(id, campo){
+  if (!usuario) return false;
+  if (campo === 'res') return usuario === ADMIN;          // RESULT. solo Óscar
+  return JUGADORES[+campo] === usuario && !bloqueado(id); // tu columna y sin empezar
 }
 
 const $ = s => document.querySelector(s);
@@ -259,13 +318,12 @@ function pintarTodo(){
     sec.partidos.forEach(p => {
       const fila = document.createElement('div');
       fila.className = 'partido';
-      const bloq = bloqueado(p.id);
       fila.innerHTML = `
         <div class="fecha">${p.fecha||''}</div>
         <div class="equipos">${p.partido}</div>
-        ${JUGADORES.map((j,i)=>`<div class="celda${bloq?' bloqueada':''}" data-nombre="${j}">
+        ${JUGADORES.map((j,i)=>`<div class="celda" data-nombre="${j}">
           <input value="${p.pron[i]||''}" placeholder="–" class="${claseAcierto(puntos(p.pron[i],p.res))}"
-            data-id="${p.id}" data-campo="${i}" inputmode="numeric"${bloq?' disabled title="Bloqueado: el partido ya ha empezado"':''}
+            data-id="${p.id}" data-campo="${i}" inputmode="numeric"
             aria-label="Pronóstico de ${j} para ${p.partido}"></div>`).join('')}
         <div class="celda resultado" data-nombre="Result.">
           <input value="${p.res||''}" placeholder="–" data-id="${p.id}" data-campo="res"
@@ -275,6 +333,7 @@ function pintarTodo(){
     main.appendChild(section);
   });
   enlazarInputs();
+  aplicarBloqueos();
   ajustarAlturaNav();
 }
 
@@ -338,15 +397,22 @@ function refrescar(){
   pintarMarcador();
 }
 
-/* Bloquea (deshabilita) los pronósticos cuyos partidos ya han empezado.
-   El RESULT. nunca se bloquea. Se llama al pintar, al refrescar y por temporizador. */
+/* Aplica permisos a cada casilla: solo tu columna (y antes de empezar el
+   partido) es editable; la columna RESULT. solo para Óscar. Las demás se
+   muestran pero deshabilitadas. Se llama al pintar, refrescar y por temporizador. */
 function aplicarBloqueos(){
   document.querySelectorAll('#contenido input[data-campo]').forEach(inp => {
-    if (inp.dataset.campo === 'res') return;        // el resultado siempre editable
-    const bloq = bloqueado(inp.dataset.id);
-    inp.disabled = bloq;
-    inp.title = bloq ? 'Bloqueado: el partido ya ha empezado' : '';
-    inp.closest('.celda').classList.toggle('bloqueada', bloq);
+    const id = inp.dataset.id, campo = inp.dataset.campo;
+    const ed = editable(id, campo);
+    inp.disabled = !ed;
+    const celda = inp.closest('.celda');
+    const propio = campo !== 'res' && JUGADORES[+campo] === usuario;
+    const porTiempo = propio && bloqueado(id);
+    celda.classList.toggle('mia', propio);                 // resalta tu columna
+    celda.classList.toggle('bloqueada', porTiempo);        // candado: ya empezó
+    celda.classList.toggle('ajena', !ed && !porTiempo);    // de otro / no permitida
+    inp.title = porTiempo ? 'Bloqueado: el partido ya ha empezado'
+              : (!ed ? 'No puedes editar esta casilla' : '');
   });
 }
 // Revisa cada 30 s para bloquear en vivo los partidos que vayan empezando
@@ -357,11 +423,14 @@ async function guardar(inp){
   const valor = inp.value.trim();
   if (valor === inp.dataset.original.trim()) return;
   inp.classList.remove('error');
-  // No permitir cambiar un pronóstico de un partido ya empezado (el RESULT. sí)
-  if (inp.dataset.campo !== 'res' && bloqueado(inp.dataset.id)){
+  // Comprobar permiso: tu columna (y sin empezar) o RESULT. si eres Óscar
+  if (!editable(inp.dataset.id, inp.dataset.campo)){
     inp.value = inp.dataset.original;
     aplicarBloqueos();
-    toast('Ese partido ya ha empezado: el pronóstico está bloqueado', true);
+    const campo = inp.dataset.campo;
+    toast(campo !== 'res' && bloqueado(inp.dataset.id)
+      ? 'Ese partido ya ha empezado: el pronóstico está bloqueado'
+      : 'No puedes editar esta casilla', true);
     return;
   }
   if (valor && !parsear(valor)){
@@ -423,11 +492,132 @@ function sinConfigurar(){
 
 function arrancarLocal(motivo){
   datos = structuredClone(SEED);
+  usuario = ADMIN;  // en modo local (solo previsualización) se asume Óscar
   $('#avisoConfig').style.display = 'block';
   $('#avisoConfig').className = 'aviso-config';
   $('#avisoConfig').innerHTML = motivo;
   estado('Modo local (sin guardar)', false);
+  mostrarSesion();
   pintarMarcador(); pintarTodo();
+}
+
+/* ---------- login ---------- */
+const CLAVE_SESION = 'porra_usuario';
+let seleccionado = null;   // usuario elegido en el paso de contraseña
+
+function mostrarSesion(){
+  if (!usuario) { $('#sesion').style.display = 'none'; return; }
+  $('#sesion').style.display = 'inline-flex';
+  $('#sesionNombre').textContent = usuario + (usuario === ADMIN ? ' (admin)' : '');
+}
+
+function abrirLogin(){
+  $('#login').style.display = 'flex';
+  $('#loginPass').style.display = 'none';
+  $('#loginUsuarios').style.display = 'grid';
+  $('#loginTitulo').textContent = '¿Quién eres?';
+  const cont = $('#loginUsuarios');
+  cont.innerHTML = '';
+  JUGADORES.forEach(nombre => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = nombre;
+    b.onclick = () => elegirUsuario(nombre);
+    cont.appendChild(b);
+  });
+}
+
+async function elegirUsuario(nombre){
+  seleccionado = nombre;
+  $('#loginError').textContent = '';
+  $('#loginInput').value = '';
+  $('#loginInput2').value = '';
+  let snap;
+  try { snap = await get(ref(db, 'usuarios/' + nombre)); }
+  catch(e){ $('#loginError').textContent = 'Error de conexión.'; return; }
+  const hash = snap.exists() ? (snap.val().hash || '') : '';
+  $('#loginUsuarios').style.display = 'none';
+  $('#loginPass').style.display = 'block';
+  $('#loginTitulo').textContent = nombre;
+  if (!hash){
+    // primera vez: definir contraseña
+    $('#loginPass').dataset.modo = 'crear';
+    $('#loginMsg').textContent = 'Primera vez. Elige una contraseña para tu usuario.';
+    $('#loginInput').placeholder = 'Nueva contraseña';
+    $('#loginInput2').style.display = 'block';
+    $('#loginBtn').textContent = 'Crear y entrar';
+  } else {
+    $('#loginPass').dataset.modo = 'verificar';
+    $('#loginPass').dataset.hash = hash;
+    $('#loginMsg').textContent = 'Introduce tu contraseña.';
+    $('#loginInput').placeholder = 'Contraseña';
+    $('#loginInput2').style.display = 'none';
+    $('#loginBtn').textContent = 'Entrar';
+  }
+  $('#loginInput').focus();
+}
+
+async function enviarLogin(){
+  const modo = $('#loginPass').dataset.modo;
+  const clave = $('#loginInput').value;
+  const err = $('#loginError');
+  err.textContent = '';
+  if (modo === 'crear'){
+    if (clave.length < 3){ err.textContent = 'Mínimo 3 caracteres.'; return; }
+    if (clave !== $('#loginInput2').value){ err.textContent = 'Las contraseñas no coinciden.'; return; }
+    try {
+      const h = await hashClave(clave);
+      await set(ref(db, 'usuarios/' + seleccionado + '/hash'), h);
+      entrar(seleccionado);
+    } catch(e){ err.textContent = 'No se pudo guardar la contraseña.'; }
+  } else {
+    const h = await hashClave(clave);
+    if (h === $('#loginPass').dataset.hash) entrar(seleccionado);
+    else err.textContent = 'Contraseña incorrecta.';
+  }
+}
+
+function entrar(nombre){
+  usuario = nombre;
+  try { localStorage.setItem(CLAVE_SESION, nombre); } catch(e){}
+  $('#login').style.display = 'none';
+  mostrarSesion();
+  if (datos){ pintarMarcador(); pintarTodo(); }
+}
+
+function cerrarSesion(){
+  usuario = null;
+  try { localStorage.removeItem(CLAVE_SESION); } catch(e){}
+  mostrarSesion();
+  abrirLogin();
+}
+
+$('#loginBtn').addEventListener('click', enviarLogin);
+$('#loginInput').addEventListener('keydown', e => { if (e.key==='Enter' && $('#loginInput2').style.display==='none') enviarLogin(); });
+$('#loginInput2').addEventListener('keydown', e => { if (e.key==='Enter') enviarLogin(); });
+$('#loginVolver').addEventListener('click', abrirLogin);
+$('#btnCambiar').addEventListener('click', cerrarSesion);
+
+// Da de alta los 4 usuarios (sin contraseña) la primera vez.
+async function sembrarUsuarios(){
+  const snap = await get(ref(db, 'usuarios'));
+  if (!snap.exists()){
+    const u = {};
+    JUGADORES.forEach(n => u[n] = { hash: '' });
+    await set(ref(db, 'usuarios'), u);
+  }
+}
+
+// Decide el acceso: si hay sesión recordada, entra; si no, pide login.
+function iniciarSesion(){
+  let recordado = null;
+  try { recordado = localStorage.getItem(CLAVE_SESION); } catch(e){}
+  if (recordado && JUGADORES.includes(recordado)){
+    usuario = recordado;
+    mostrarSesion();
+    if (datos){ pintarMarcador(); pintarTodo(); }
+  } else {
+    abrirLogin();
+  }
 }
 
 async function arrancar(){
@@ -455,6 +645,9 @@ async function arrancar(){
       datos = structuredClone(SEED);
       await set(refPorra, datos);
     }
+
+    await sembrarUsuarios();
+    iniciarSesion();
 
     // Escucha en tiempo real
     onValue(refPorra, (s) => {
