@@ -72,8 +72,13 @@ section{margin-bottom:2.6rem}
 .encabezados .res{color:var(--campo);font-weight:700}
 
 .partido{display:grid;grid-template-columns:5.2rem 1fr repeat(5,4.4rem);gap:.45rem;align-items:center;background:#fff;border:1px solid var(--linea);border-radius:var(--radio);padding:.55rem .6rem;margin-bottom:.45rem}
+.encabezados.elim{grid-template-columns:5.2rem 1fr repeat(5,4.4rem) 7rem}
+.partido.elim{grid-template-columns:5.2rem 1fr repeat(5,4.4rem) 7rem}
 .partido .fecha{font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--gris);line-height:1.3}
 .partido .equipos{font-weight:600;font-size:.88rem;line-height:1.25}
+.celda.ganador select{width:100%;font-family:'Inter',sans-serif;font-size:.74rem;font-weight:600;border:1.5px solid var(--oro);border-radius:7px;padding:.38rem .3rem;background:#fffdf5;color:var(--tinta);cursor:pointer}
+.celda.ganador select:focus{outline:none;box-shadow:0 0 0 3px rgba(245,184,46,.3)}
+.celda.ganador select:disabled{cursor:not-allowed;opacity:.7;border-color:var(--linea);background:#f1f3f1}
 
 .celda input{width:100%;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.82rem;font-weight:500;border:1.5px solid var(--linea);border-radius:7px;padding:.42rem .15rem;background:var(--cal);color:var(--tinta);transition:border-color .15s ease, box-shadow .15s ease}
 .celda input::placeholder{color:#b9c4bd}
@@ -142,11 +147,14 @@ section{margin-bottom:2.6rem}
 @media (max-width:680px){
   .encabezados{display:none}
   .partido{grid-template-columns:repeat(5,1fr);row-gap:.5rem}
+  .partido.elim{grid-template-columns:repeat(5,1fr)}
   .partido .fecha{grid-column:1/3}
   .partido .equipos{grid-column:3/6;text-align:right}
   .celda{position:relative;padding-top:.9rem}
   .celda::before{content:attr(data-nombre);position:absolute;top:0;left:0;right:0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--gris)}
   .celda.resultado::before{color:var(--campo);font-weight:700}
+  .celda.ganador{grid-column:1/6}
+  .celda.ganador::before{color:#8a6508;font-weight:700}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important}}
 </style>
@@ -154,7 +162,7 @@ section{margin-bottom:2.6rem}
 <body>
 
 <header>
-  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.6)</div>
+  <div class="firma">Powered by <b>Oscucio</b><br>(v.1.0.0.8)</div>
   <p class="eyebrow">Mundial 2026 · México · EE. UU. · Canadá</p>
   <h1>La Gran Purria<br><span>Porra</span></h1>
   <div class="circulo" aria-hidden="true">⚽</div>
@@ -232,11 +240,85 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getDatabase, ref, onValue, set, get }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-const SEED = {"jugadores": ["Andrés", "Brooks", "Fran", "Óscar"], "secciones": [{"nombre": "JORNADA 1", "partidos": [{"id": "p9", "fecha": "JUE 11 - 21:00", "partido": "México - Sudáfrica", "pron": ["2 - 1", "1 - 0", "3 - 0", "2 - 1"], "res": "", "ts": 1781204400000}, {"id": "p10", "fecha": "VIE 12 - 04:00", "partido": "Corea del Sur - Chequia", "pron": ["", "", "", ""], "res": "", "ts": 1781229600000}, {"id": "p11", "fecha": "VIE 12 - 21:00", "partido": "Canadá - Bosnia y Herz.", "pron": ["", "", "", ""], "res": "", "ts": 1781290800000}, {"id": "p12", "fecha": "SÁB 13 - 03:00", "partido": "Estados Unidos - Paraguay", "pron": ["", "", "", ""], "res": "", "ts": 1781312400000}, {"id": "p13", "fecha": "SÁB 13 - 21:00", "partido": "Catar - Suiza", "pron": ["", "", "", ""], "res": "", "ts": 1781377200000}, {"id": "p14", "fecha": "DOM 14 - 00:00", "partido": "Brasil - Marruecos", "pron": ["", "", "", ""], "res": "", "ts": 1781388000000}, {"id": "p15", "fecha": "DOM 14 - 03:00", "partido": "Haití - Escocia", "pron": ["", "", "", ""], "res": "", "ts": 1781398800000}, {"id": "p16", "fecha": "DOM 14 - 06:00", "partido": "Australia - Turquía", "pron": ["", "", "", ""], "res": "", "ts": 1781409600000}, {"id": "p17", "fecha": "DOM 14 - 19:00", "partido": "Alemania - Curazao", "pron": ["", "", "", ""], "res": "", "ts": 1781456400000}, {"id": "p18", "fecha": "DOM 14 - 22:00", "partido": "Países Bajos - Japón", "pron": ["", "", "", ""], "res": "", "ts": 1781467200000}, {"id": "p19", "fecha": "LUN 15 - 01:00", "partido": "Costa de Marfil - Ecuador", "pron": ["", "", "", ""], "res": "", "ts": 1781478000000}, {"id": "p20", "fecha": "LUN 15 - 04:00", "partido": "Suecia - Túnez", "pron": ["", "", "", ""], "res": "", "ts": 1781488800000}, {"id": "p21", "fecha": "LUN 15 - 18:00", "partido": "España - Cabo Verde", "pron": ["", "", "", ""], "res": "", "ts": 1781539200000}, {"id": "p22", "fecha": "LUN 15 - 21:00", "partido": "Bélgica - Egipto", "pron": ["", "", "", ""], "res": "", "ts": 1781550000000}, {"id": "p23", "fecha": "MAR 16 - 00:00", "partido": "Arabia Saudí - Uruguay", "pron": ["", "", "", ""], "res": "", "ts": 1781560800000}, {"id": "p24", "fecha": "MAR 16 - 03:00", "partido": "Irán - Nueva Zelanda", "pron": ["", "", "", ""], "res": "", "ts": 1781571600000}, {"id": "p25", "fecha": "MAR 16 - 21:00", "partido": "Francia - Senegal", "pron": ["", "", "", ""], "res": "", "ts": 1781636400000}, {"id": "p26", "fecha": "MIÉ 17 - 00:00", "partido": "Irak - Noruega", "pron": ["", "", "", ""], "res": "", "ts": 1781647200000}, {"id": "p27", "fecha": "MIÉ 17 - 03:00", "partido": "Argentina - Argelia", "pron": ["", "", "", ""], "res": "", "ts": 1781658000000}, {"id": "p28", "fecha": "MIÉ 17 - 06:00", "partido": "Austria - Jordania", "pron": ["", "", "", ""], "res": "", "ts": 1781668800000}, {"id": "p29", "fecha": "MIÉ 17 - 19:00", "partido": "Portugal - Congo RD", "pron": ["", "", "", ""], "res": "", "ts": 1781715600000}, {"id": "p30", "fecha": "MIÉ 17 - 22:00", "partido": "Inglaterra - Croacia", "pron": ["", "", "", ""], "res": "", "ts": 1781726400000}, {"id": "p31", "fecha": "JUE 18 - 01:00", "partido": "Ghana - Panamá", "pron": ["", "", "", ""], "res": "", "ts": 1781737200000}, {"id": "p32", "fecha": "JUE 18 - 04:00", "partido": "Uzbekistán - Colombia", "pron": ["", "", "", ""], "res": "", "ts": 1781748000000}]}, {"nombre": "JORNADA 2", "partidos": [{"id": "p35", "fecha": "JUE 18 - 18:00", "partido": "Chequia - Sudáfrica", "pron": ["", "", "", ""], "res": "", "ts": 1781798400000}, {"id": "p36", "fecha": "JUE 18 - 21:00", "partido": "Suiza - Bosnia y Herz.", "pron": ["", "", "", ""], "res": "", "ts": 1781809200000}, {"id": "p37", "fecha": "VIE 19 - 00:00", "partido": "Canadá - Catar", "pron": ["", "", "", ""], "res": "", "ts": 1781820000000}, {"id": "p38", "fecha": "VIE 19 - 03:00", "partido": "México - Corea del Sur", "pron": ["", "", "", ""], "res": "", "ts": 1781830800000}, {"id": "p39", "fecha": "VIE 19 - 21:00", "partido": "Estados Unidos - Australia", "pron": ["", "", "", ""], "res": "", "ts": 1781895600000}, {"id": "p40", "fecha": "SÁB 20 - 00:00", "partido": "Escocia - Marruecos", "pron": ["", "", "", ""], "res": "", "ts": 1781906400000}, {"id": "p41", "fecha": "SÁB 20 - 02:30", "partido": "Brasil - Haití", "pron": ["", "", "", ""], "res": "", "ts": 1781915400000}, {"id": "p42", "fecha": "SÁB 20 - 05:00", "partido": "Turquía - Paraguay", "pron": ["", "", "", ""], "res": "", "ts": 1781924400000}, {"id": "p43", "fecha": "SÁB 20 - 19:00", "partido": "Países Bajos - Suecia", "pron": ["", "", "", ""], "res": "", "ts": 1781974800000}, {"id": "p44", "fecha": "SÁB 20 - 22:00", "partido": "Alemania - Costa de Marfil", "pron": ["", "", "", ""], "res": "", "ts": 1781985600000}, {"id": "p45", "fecha": "DOM 21 - 02:00", "partido": "Ecuador - Curazao", "pron": ["", "", "", ""], "res": "", "ts": 1782000000000}, {"id": "p46", "fecha": "DOM 21 - 06:00", "partido": "Túnez - Japón", "pron": ["", "", "", ""], "res": "", "ts": 1782014400000}, {"id": "p47", "fecha": "DOM 21 - 18:00", "partido": "España - Arabia Saudí", "pron": ["", "", "", ""], "res": "", "ts": 1782057600000}, {"id": "p48", "fecha": "DOM 21 - 21:00", "partido": "Bélgica - Irán", "pron": ["", "", "", ""], "res": "", "ts": 1782068400000}, {"id": "p49", "fecha": "LUN 22 - 00:00", "partido": "Uruguay - Cabo Verde", "pron": ["", "", "", ""], "res": "", "ts": 1782079200000}, {"id": "p50", "fecha": "LUN 22 - 03:00", "partido": "Nueva Zelanda - Egipto", "pron": ["", "", "", ""], "res": "", "ts": 1782090000000}, {"id": "p51", "fecha": "LUN 22 - 19:00", "partido": "Argentina - Austria", "pron": ["", "", "", ""], "res": "", "ts": 1782147600000}, {"id": "p52", "fecha": "LUN 22 - 23:00", "partido": "Francia - Irak", "pron": ["", "", "", ""], "res": "", "ts": 1782162000000}, {"id": "p53", "fecha": "MAR 23 - 02:00", "partido": "Noruega - Senegal", "pron": ["", "", "", ""], "res": "", "ts": 1782172800000}, {"id": "p54", "fecha": "MAR 23 - 05:00", "partido": "Jordania - Argelia", "pron": ["", "", "", ""], "res": "", "ts": 1782183600000}, {"id": "p55", "fecha": "MAR 23 - 19:00", "partido": "Portugal - Uzbekistán", "pron": ["", "", "", ""], "res": "", "ts": 1782234000000}, {"id": "p56", "fecha": "MAR 23 - 22:00", "partido": "Inglaterra - Ghana", "pron": ["", "", "", ""], "res": "", "ts": 1782244800000}, {"id": "p57", "fecha": "MIÉ 24 - 01:00", "partido": "Panamá - Croacia", "pron": ["", "", "", ""], "res": "", "ts": 1782255600000}, {"id": "p58", "fecha": "MIÉ 24 - 04:00", "partido": "Colombia - Congo RD", "pron": ["", "", "", ""], "res": "", "ts": 1782266400000}]}, {"nombre": "JORNADA 3", "partidos": [{"id": "p61", "fecha": "MIÉ 24 - 21:00", "partido": "Bosnia y Herz. - Catar", "pron": ["", "", "", ""], "res": "", "ts": 1782327600000}, {"id": "p62", "fecha": "MIÉ 24 - 21:00", "partido": "Suiza - Canadá", "pron": ["", "", "", ""], "res": "", "ts": 1782327600000}, {"id": "p63", "fecha": "JUE 25 - 00:00", "partido": "Escocia - Brasil", "pron": ["", "", "", ""], "res": "", "ts": 1782338400000}, {"id": "p64", "fecha": "JUE 25 - 00:00", "partido": "Marruecos - Haití", "pron": ["", "", "", ""], "res": "", "ts": 1782338400000}, {"id": "p65", "fecha": "JUE 25 - 03:00", "partido": "Chequia - México", "pron": ["", "", "", ""], "res": "", "ts": 1782349200000}, {"id": "p66", "fecha": "JUE 25 - 03:00", "partido": "Sudáfrica - Corea del Sur", "pron": ["", "", "", ""], "res": "", "ts": 1782349200000}, {"id": "p67", "fecha": "JUE 25 - 22:00", "partido": "Ecuador - Alemania", "pron": ["", "", "", ""], "res": "", "ts": 1782417600000}, {"id": "p68", "fecha": "JUE 25 - 22:00", "partido": "Curazao - Costa de Marfil", "pron": ["", "", "", ""], "res": "", "ts": 1782417600000}, {"id": "p69", "fecha": "VIE 26 - 01:00", "partido": "Japón - Suecia", "pron": ["", "", "", ""], "res": "", "ts": 1782428400000}, {"id": "p70", "fecha": "VIE 26 - 01:00", "partido": "Túnez - Países Bajos", "pron": ["", "", "", ""], "res": "", "ts": 1782428400000}, {"id": "p71", "fecha": "VIE 26 - 04:00", "partido": "Turquía - Estados Unidos", "pron": ["", "", "", ""], "res": "", "ts": 1782439200000}, {"id": "p72", "fecha": "VIE 26 - 04:00", "partido": "Paraguay - Australia", "pron": ["", "", "", ""], "res": "", "ts": 1782439200000}, {"id": "p73", "fecha": "VIE 26 - 21:00", "partido": "Senegal - Irak", "pron": ["", "", "", ""], "res": "", "ts": 1782500400000}, {"id": "p74", "fecha": "VIE 26 - 21:00", "partido": "Noruega - Francia", "pron": ["", "", "", ""], "res": "", "ts": 1782500400000}, {"id": "p75", "fecha": "SÁB 27 - 02:00", "partido": "Uruguay - España", "pron": ["", "", "", ""], "res": "", "ts": 1782518400000}, {"id": "p76", "fecha": "SÁB 27 - 02:00", "partido": "Cabo Verde - Arabia Saudí", "pron": ["", "", "", ""], "res": "", "ts": 1782518400000}, {"id": "p77", "fecha": "SÁB 27 - 05:00", "partido": "Nueva Zelanda - Bélgica", "pron": ["", "", "", ""], "res": "", "ts": 1782529200000}, {"id": "p78", "fecha": "SÁB 27 - 05:00", "partido": "Egipto - Irán", "pron": ["", "", "", ""], "res": "", "ts": 1782529200000}, {"id": "p79", "fecha": "SÁB 27 - 23:00", "partido": "Croacia - Ghana", "pron": ["", "", "", ""], "res": "", "ts": 1782594000000}, {"id": "p80", "fecha": "SÁB 27 - 23:00", "partido": "Panamá - Inglaterra", "pron": ["", "", "", ""], "res": "", "ts": 1782594000000}, {"id": "p81", "fecha": "DOM 28 - 01:30", "partido": "Colombia - Portugal", "pron": ["", "", "", ""], "res": "", "ts": 1782603000000}, {"id": "p82", "fecha": "DOM 28 - 01:30", "partido": "Congo RD - Uzbekistán", "pron": ["", "", "", ""], "res": "", "ts": 1782603000000}, {"id": "p83", "fecha": "DOM 28 - 04:00", "partido": "Argelia - Austria", "pron": ["", "", "", ""], "res": "", "ts": 1782612000000}, {"id": "p84", "fecha": "DOM 28 - 04:00", "partido": "Jordania - Argentina", "pron": ["", "", "", ""], "res": "", "ts": 1782612000000}]}, {"nombre": "DIECISEISAVOS", "partidos": [{"id": "p90", "fecha": "DOM 28 - 21:00", "partido": "2º Gr. A - 2º Gr. B (P73)", "pron": ["", "", "", ""], "res": "", "ts": 1782673200000}, {"id": "p91", "fecha": "LUN 29 - 19:00", "partido": "1º Gr. C - 2º Gr. F (P76)", "pron": ["", "", "", ""], "res": "", "ts": 1782752400000}, {"id": "p92", "fecha": "LUN 29 - 22:30", "partido": "1º Gr. E - 3º A/B/C/D/F (P74)", "pron": ["", "", "", ""], "res": "", "ts": 1782765000000}, {"id": "p93", "fecha": "MAR 30 - 03:00", "partido": "1º Gr. F - 2º Gr. C (P75)", "pron": ["", "", "", ""], "res": "", "ts": 1782781200000}, {"id": "p94", "fecha": "MAR 30 - 19:00", "partido": "2º Gr. E - 2º Gr. I (P78)", "pron": ["", "", "", ""], "res": "", "ts": 1782838800000}, {"id": "p95", "fecha": "MAR 30 - 23:00", "partido": "1º Gr. I - 3º C/D/F/G/H (P77)", "pron": ["", "", "", ""], "res": "", "ts": 1782853200000}, {"id": "p96", "fecha": "MIÉ 01 - 03:00", "partido": "1º Gr. A - 3º C/E/F/H/I (P79)", "pron": ["", "", "", ""], "res": "", "ts": 1782867600000}, {"id": "p97", "fecha": "MIÉ 01 - 18:00", "partido": "1º Gr. L - 3º E/H/I/J/K (P80)", "pron": ["", "", "", ""], "res": "", "ts": 1782921600000}, {"id": "p98", "fecha": "MIÉ 01 - 22:00", "partido": "1º Gr. G - 3º A/E/H/I/J (P82)", "pron": ["", "", "", ""], "res": "", "ts": 1782936000000}, {"id": "p99", "fecha": "JUE 02 - 02:00", "partido": "1º Gr. D - 3º B/E/F/I/J (P81)", "pron": ["", "", "", ""], "res": "", "ts": 1782950400000}, {"id": "p100", "fecha": "JUE 02 - 21:00", "partido": "1º Gr. H - 2º Gr. J (P84)", "pron": ["", "", "", ""], "res": "", "ts": 1783018800000}, {"id": "p101", "fecha": "VIE 03 - 01:00", "partido": "2º Gr. K - 2º Gr. L (P83)", "pron": ["", "", "", ""], "res": "", "ts": 1783033200000}, {"id": "p102", "fecha": "VIE 03 - 05:00", "partido": "1º Gr. B - 3º E/F/G/I/J (P85)", "pron": ["", "", "", ""], "res": "", "ts": 1783047600000}, {"id": "p103", "fecha": "VIE 03 - 20:00", "partido": "2º Gr. D - 2º Gr. G (P88)", "pron": ["", "", "", ""], "res": "", "ts": 1783101600000}, {"id": "p104", "fecha": "SÁB 04 - 00:00", "partido": "1º Gr. J - 2º Gr. H (P86)", "pron": ["", "", "", ""], "res": "", "ts": 1783116000000}, {"id": "p105", "fecha": "SÁB 04 - 03:30", "partido": "1º Gr. K - 3º D/E/I/J/L (P87)", "pron": ["", "", "", ""], "res": "", "ts": 1783128600000}]}, {"nombre": "OCTAVOS DE FINAL", "partidos": [{"id": "p108", "fecha": "SÁB 04 - 19:00", "partido": "Ganador P73 - Ganador P75 (P90)", "pron": ["", "", "", ""], "res": "", "ts": 1783184400000}, {"id": "p109", "fecha": "SÁB 04 - 23:00", "partido": "Ganador P74 - Ganador P77 (P89)", "pron": ["", "", "", ""], "res": "", "ts": 1783198800000}, {"id": "p110", "fecha": "DOM 05 - 22:00", "partido": "Ganador P76 - Ganador P78 (P91)", "pron": ["", "", "", ""], "res": "", "ts": 1783281600000}, {"id": "p111", "fecha": "LUN 06 - 02:00", "partido": "Ganador P79 - Ganador P80 (P92)", "pron": ["", "", "", ""], "res": "", "ts": 1783296000000}, {"id": "p112", "fecha": "LUN 06 - 21:00", "partido": "Ganador P83 - Ganador P84 (P93)", "pron": ["", "", "", ""], "res": "", "ts": 1783364400000}, {"id": "p113", "fecha": "MAR 07 - 02:00", "partido": "Ganador P81 - Ganador P82 (P94)", "pron": ["", "", "", ""], "res": "", "ts": 1783382400000}, {"id": "p114", "fecha": "MAR 07 - 18:00", "partido": "Ganador P86 - Ganador P88 (P95)", "pron": ["", "", "", ""], "res": "", "ts": 1783440000000}, {"id": "p115", "fecha": "MAR 07 - 22:00", "partido": "Ganador P85 - Ganador P87 (P96)", "pron": ["", "", "", ""], "res": "", "ts": 1783454400000}]}, {"nombre": "CUARTOS DE FINAL", "partidos": [{"id": "p118", "fecha": "JUE 09 - 22:00", "partido": "Ganador P89 - Ganador P90 (P97)", "pron": ["", "", "", ""], "res": "", "ts": 1783627200000}, {"id": "p119", "fecha": "VIE 10 - 21:00", "partido": "Ganador P93 - Ganador P94 (P98)", "pron": ["", "", "", ""], "res": "", "ts": 1783710000000}, {"id": "p120", "fecha": "SÁB 11 - 23:00", "partido": "Ganador P91 - Ganador P92 (P99)", "pron": ["", "", "", ""], "res": "", "ts": 1783803600000}, {"id": "p121", "fecha": "DOM 12 - 03:00", "partido": "Ganador P95 - Ganador P96 (P100)", "pron": ["", "", "", ""], "res": "", "ts": 1783818000000}]}, {"nombre": "SEMIFINALES", "partidos": [{"id": "p124", "fecha": "MAR 14 - 21:00", "partido": "Ganador P97 - Ganador P98 (P101)", "pron": ["", "", "", ""], "res": "", "ts": 1784055600000}, {"id": "p125", "fecha": "MIÉ 15 - 21:00", "partido": "Ganador P99 - Ganador P100 (P102)", "pron": ["", "", "", ""], "res": "", "ts": 1784142000000}]}, {"nombre": "FINALES", "partidos": [{"id": "p128", "fecha": "SÁB 18 - 23:00", "partido": "TERCER Y CUARTO PUESTO", "pron": ["", "", "", ""], "res": "", "ts": 1784408400000}, {"id": "p129", "fecha": "DOM 19 - 21:00", "partido": "GRAN FINAL", "pron": ["", "", "", ""], "res": "", "ts": 1784487600000}]}]};
-
+const SEED = {"jugadores": ["Andrés", "Brooks", "Fran", "Óscar"], "secciones": [{"nombre": "JORNADA 1", "partidos": [{"id": "p9", "fecha": "JUE 11 - 21:00", "partido": "México - Sudáfrica", "pron": ["2 - 1", "1 - 0", "3 - 0", "2 - 1"], "res": "", "ts": 1781204400000}, {"id": "p10", "fecha": "VIE 12 - 04:00", "partido": "Corea del Sur - Chequia", "pron": ["", "", "", ""], "res": "", "ts": 1781229600000}, {"id": "p11", "fecha": "VIE 12 - 21:00", "partido": "Canadá - Bosnia y Herz.", "pron": ["", "", "", ""], "res": "", "ts": 1781290800000}, {"id": "p12", "fecha": "SÁB 13 - 03:00", "partido": "Estados Unidos - Paraguay", "pron": ["", "", "", ""], "res": "", "ts": 1781312400000}, {"id": "p13", "fecha": "SÁB 13 - 21:00", "partido": "Catar - Suiza", "pron": ["", "", "", ""], "res": "", "ts": 1781377200000}, {"id": "p14", "fecha": "DOM 14 - 00:00", "partido": "Brasil - Marruecos", "pron": ["", "", "", ""], "res": "", "ts": 1781388000000}, {"id": "p15", "fecha": "DOM 14 - 03:00", "partido": "Haití - Escocia", "pron": ["", "", "", ""], "res": "", "ts": 1781398800000}, {"id": "p16", "fecha": "DOM 14 - 06:00", "partido": "Australia - Turquía", "pron": ["", "", "", ""], "res": "", "ts": 1781409600000}, {"id": "p17", "fecha": "DOM 14 - 19:00", "partido": "Alemania - Curazao", "pron": ["", "", "", ""], "res": "", "ts": 1781456400000}, {"id": "p18", "fecha": "DOM 14 - 22:00", "partido": "Países Bajos - Japón", "pron": ["", "", "", ""], "res": "", "ts": 1781467200000}, {"id": "p19", "fecha": "LUN 15 - 01:00", "partido": "Costa de Marfil - Ecuador", "pron": ["", "", "", ""], "res": "", "ts": 1781478000000}, {"id": "p20", "fecha": "LUN 15 - 04:00", "partido": "Suecia - Túnez", "pron": ["", "", "", ""], "res": "", "ts": 1781488800000}, {"id": "p21", "fecha": "LUN 15 - 18:00", "partido": "España - Cabo Verde", "pron": ["", "", "", ""], "res": "", "ts": 1781539200000}, {"id": "p22", "fecha": "LUN 15 - 21:00", "partido": "Bélgica - Egipto", "pron": ["", "", "", ""], "res": "", "ts": 1781550000000}, {"id": "p23", "fecha": "MAR 16 - 00:00", "partido": "Arabia Saudí - Uruguay", "pron": ["", "", "", ""], "res": "", "ts": 1781560800000}, {"id": "p24", "fecha": "MAR 16 - 03:00", "partido": "Irán - Nueva Zelanda", "pron": ["", "", "", ""], "res": "", "ts": 1781571600000}, {"id": "p25", "fecha": "MAR 16 - 21:00", "partido": "Francia - Senegal", "pron": ["", "", "", ""], "res": "", "ts": 1781636400000}, {"id": "p26", "fecha": "MIÉ 17 - 00:00", "partido": "Irak - Noruega", "pron": ["", "", "", ""], "res": "", "ts": 1781647200000}, {"id": "p27", "fecha": "MIÉ 17 - 03:00", "partido": "Argentina - Argelia", "pron": ["", "", "", ""], "res": "", "ts": 1781658000000}, {"id": "p28", "fecha": "MIÉ 17 - 06:00", "partido": "Austria - Jordania", "pron": ["", "", "", ""], "res": "", "ts": 1781668800000}, {"id": "p29", "fecha": "MIÉ 17 - 19:00", "partido": "Portugal - Congo RD", "pron": ["", "", "", ""], "res": "", "ts": 1781715600000}, {"id": "p30", "fecha": "MIÉ 17 - 22:00", "partido": "Inglaterra - Croacia", "pron": ["", "", "", ""], "res": "", "ts": 1781726400000}, {"id": "p31", "fecha": "JUE 18 - 01:00", "partido": "Ghana - Panamá", "pron": ["", "", "", ""], "res": "", "ts": 1781737200000}, {"id": "p32", "fecha": "JUE 18 - 04:00", "partido": "Uzbekistán - Colombia", "pron": ["", "", "", ""], "res": "", "ts": 1781748000000}]}, {"nombre": "JORNADA 2", "partidos": [{"id": "p35", "fecha": "JUE 18 - 18:00", "partido": "Chequia - Sudáfrica", "pron": ["", "", "", ""], "res": "", "ts": 1781798400000}, {"id": "p36", "fecha": "JUE 18 - 21:00", "partido": "Suiza - Bosnia y Herz.", "pron": ["", "", "", ""], "res": "", "ts": 1781809200000}, {"id": "p37", "fecha": "VIE 19 - 00:00", "partido": "Canadá - Catar", "pron": ["", "", "", ""], "res": "", "ts": 1781820000000}, {"id": "p38", "fecha": "VIE 19 - 03:00", "partido": "México - Corea del Sur", "pron": ["", "", "", ""], "res": "", "ts": 1781830800000}, {"id": "p39", "fecha": "VIE 19 - 21:00", "partido": "Estados Unidos - Australia", "pron": ["", "", "", ""], "res": "", "ts": 1781895600000}, {"id": "p40", "fecha": "SÁB 20 - 00:00", "partido": "Escocia - Marruecos", "pron": ["", "", "", ""], "res": "", "ts": 1781906400000}, {"id": "p41", "fecha": "SÁB 20 - 02:30", "partido": "Brasil - Haití", "pron": ["", "", "", ""], "res": "", "ts": 1781915400000}, {"id": "p42", "fecha": "SÁB 20 - 05:00", "partido": "Turquía - Paraguay", "pron": ["", "", "", ""], "res": "", "ts": 1781924400000}, {"id": "p43", "fecha": "SÁB 20 - 19:00", "partido": "Países Bajos - Suecia", "pron": ["", "", "", ""], "res": "", "ts": 1781974800000}, {"id": "p44", "fecha": "SÁB 20 - 22:00", "partido": "Alemania - Costa de Marfil", "pron": ["", "", "", ""], "res": "", "ts": 1781985600000}, {"id": "p45", "fecha": "DOM 21 - 02:00", "partido": "Ecuador - Curazao", "pron": ["", "", "", ""], "res": "", "ts": 1782000000000}, {"id": "p46", "fecha": "DOM 21 - 06:00", "partido": "Túnez - Japón", "pron": ["", "", "", ""], "res": "", "ts": 1782014400000}, {"id": "p47", "fecha": "DOM 21 - 18:00", "partido": "España - Arabia Saudí", "pron": ["", "", "", ""], "res": "", "ts": 1782057600000}, {"id": "p48", "fecha": "DOM 21 - 21:00", "partido": "Bélgica - Irán", "pron": ["", "", "", ""], "res": "", "ts": 1782068400000}, {"id": "p49", "fecha": "LUN 22 - 00:00", "partido": "Uruguay - Cabo Verde", "pron": ["", "", "", ""], "res": "", "ts": 1782079200000}, {"id": "p50", "fecha": "LUN 22 - 03:00", "partido": "Nueva Zelanda - Egipto", "pron": ["", "", "", ""], "res": "", "ts": 1782090000000}, {"id": "p51", "fecha": "LUN 22 - 19:00", "partido": "Argentina - Austria", "pron": ["", "", "", ""], "res": "", "ts": 1782147600000}, {"id": "p52", "fecha": "LUN 22 - 23:00", "partido": "Francia - Irak", "pron": ["", "", "", ""], "res": "", "ts": 1782162000000}, {"id": "p53", "fecha": "MAR 23 - 02:00", "partido": "Noruega - Senegal", "pron": ["", "", "", ""], "res": "", "ts": 1782172800000}, {"id": "p54", "fecha": "MAR 23 - 05:00", "partido": "Jordania - Argelia", "pron": ["", "", "", ""], "res": "", "ts": 1782183600000}, {"id": "p55", "fecha": "MAR 23 - 19:00", "partido": "Portugal - Uzbekistán", "pron": ["", "", "", ""], "res": "", "ts": 1782234000000}, {"id": "p56", "fecha": "MAR 23 - 22:00", "partido": "Inglaterra - Ghana", "pron": ["", "", "", ""], "res": "", "ts": 1782244800000}, {"id": "p57", "fecha": "MIÉ 24 - 01:00", "partido": "Panamá - Croacia", "pron": ["", "", "", ""], "res": "", "ts": 1782255600000}, {"id": "p58", "fecha": "MIÉ 24 - 04:00", "partido": "Colombia - Congo RD", "pron": ["", "", "", ""], "res": "", "ts": 1782266400000}]}, {"nombre": "JORNADA 3", "partidos": [{"id": "p61", "fecha": "MIÉ 24 - 21:00", "partido": "Bosnia y Herz. - Catar", "pron": ["", "", "", ""], "res": "", "ts": 1782327600000}, {"id": "p62", "fecha": "MIÉ 24 - 21:00", "partido": "Suiza - Canadá", "pron": ["", "", "", ""], "res": "", "ts": 1782327600000}, {"id": "p63", "fecha": "JUE 25 - 00:00", "partido": "Escocia - Brasil", "pron": ["", "", "", ""], "res": "", "ts": 1782338400000}, {"id": "p64", "fecha": "JUE 25 - 00:00", "partido": "Marruecos - Haití", "pron": ["", "", "", ""], "res": "", "ts": 1782338400000}, {"id": "p65", "fecha": "JUE 25 - 03:00", "partido": "Chequia - México", "pron": ["", "", "", ""], "res": "", "ts": 1782349200000}, {"id": "p66", "fecha": "JUE 25 - 03:00", "partido": "Sudáfrica - Corea del Sur", "pron": ["", "", "", ""], "res": "", "ts": 1782349200000}, {"id": "p67", "fecha": "JUE 25 - 22:00", "partido": "Ecuador - Alemania", "pron": ["", "", "", ""], "res": "", "ts": 1782417600000}, {"id": "p68", "fecha": "JUE 25 - 22:00", "partido": "Curazao - Costa de Marfil", "pron": ["", "", "", ""], "res": "", "ts": 1782417600000}, {"id": "p69", "fecha": "VIE 26 - 01:00", "partido": "Japón - Suecia", "pron": ["", "", "", ""], "res": "", "ts": 1782428400000}, {"id": "p70", "fecha": "VIE 26 - 01:00", "partido": "Túnez - Países Bajos", "pron": ["", "", "", ""], "res": "", "ts": 1782428400000}, {"id": "p71", "fecha": "VIE 26 - 04:00", "partido": "Turquía - Estados Unidos", "pron": ["", "", "", ""], "res": "", "ts": 1782439200000}, {"id": "p72", "fecha": "VIE 26 - 04:00", "partido": "Paraguay - Australia", "pron": ["", "", "", ""], "res": "", "ts": 1782439200000}, {"id": "p73", "fecha": "VIE 26 - 21:00", "partido": "Senegal - Irak", "pron": ["", "", "", ""], "res": "", "ts": 1782500400000}, {"id": "p74", "fecha": "VIE 26 - 21:00", "partido": "Noruega - Francia", "pron": ["", "", "", ""], "res": "", "ts": 1782500400000}, {"id": "p75", "fecha": "SÁB 27 - 02:00", "partido": "Uruguay - España", "pron": ["", "", "", ""], "res": "", "ts": 1782518400000}, {"id": "p76", "fecha": "SÁB 27 - 02:00", "partido": "Cabo Verde - Arabia Saudí", "pron": ["", "", "", ""], "res": "", "ts": 1782518400000}, {"id": "p77", "fecha": "SÁB 27 - 05:00", "partido": "Nueva Zelanda - Bélgica", "pron": ["", "", "", ""], "res": "", "ts": 1782529200000}, {"id": "p78", "fecha": "SÁB 27 - 05:00", "partido": "Egipto - Irán", "pron": ["", "", "", ""], "res": "", "ts": 1782529200000}, {"id": "p79", "fecha": "SÁB 27 - 23:00", "partido": "Croacia - Ghana", "pron": ["", "", "", ""], "res": "", "ts": 1782594000000}, {"id": "p80", "fecha": "SÁB 27 - 23:00", "partido": "Panamá - Inglaterra", "pron": ["", "", "", ""], "res": "", "ts": 1782594000000}, {"id": "p81", "fecha": "DOM 28 - 01:30", "partido": "Colombia - Portugal", "pron": ["", "", "", ""], "res": "", "ts": 1782603000000}, {"id": "p82", "fecha": "DOM 28 - 01:30", "partido": "Congo RD - Uzbekistán", "pron": ["", "", "", ""], "res": "", "ts": 1782603000000}, {"id": "p83", "fecha": "DOM 28 - 04:00", "partido": "Argelia - Austria", "pron": ["", "", "", ""], "res": "", "ts": 1782612000000}, {"id": "p84", "fecha": "DOM 28 - 04:00", "partido": "Jordania - Argentina", "pron": ["", "", "", ""], "res": "", "ts": 1782612000000}]}, {"nombre": "DIECISEISAVOS", "partidos": [{"id": "p90", "fecha": "DOM 28 - 21:00", "partido": "Sudáfrica - Canadá (P73)", "pron": ["", "", "", ""], "res": "", "ts": 1782673200000}, {"id": "p91", "fecha": "LUN 29 - 19:00", "partido": "Francia - Suecia (P76)", "pron": ["", "", "", ""], "res": "", "ts": 1782752400000}, {"id": "p92", "fecha": "LUN 29 - 22:30", "partido": "Países Bajos - Marruecos (P74)", "pron": ["", "", "", ""], "res": "", "ts": 1782765000000}, {"id": "p93", "fecha": "MAR 30 - 03:00", "partido": "Alemania - Paraguay (P75)", "pron": ["", "", "", ""], "res": "", "ts": 1782781200000}, {"id": "p94", "fecha": "MAR 30 - 19:00", "partido": "Estados Unidos - Bosnia y Herzegovina (P78)", "pron": ["", "", "", ""], "res": "", "ts": 1782838800000}, {"id": "p95", "fecha": "MAR 30 - 23:00", "partido": "Bélgica - Senegal (P77)", "pron": ["", "", "", ""], "res": "", "ts": 1782853200000}, {"id": "p96", "fecha": "MIÉ 01 - 03:00", "partido": "España - Austria (P79)", "pron": ["", "", "", ""], "res": "", "ts": 1782867600000}, {"id": "p97", "fecha": "MIÉ 01 - 18:00", "partido": "Portugal - Croacia (P80)", "pron": ["", "", "", ""], "res": "", "ts": 1782921600000}, {"id": "p98", "fecha": "MIÉ 01 - 22:00", "partido": "Costa de Marfil - Noruega (P82)", "pron": ["", "", "", ""], "res": "", "ts": 1782936000000}, {"id": "p99", "fecha": "JUE 02 - 02:00", "partido": "Brasil - Japón (P81)", "pron": ["", "", "", ""], "res": "", "ts": 1782950400000}, {"id": "p100", "fecha": "JUE 02 - 21:00", "partido": "Inglaterra - RD Congo (P84)", "pron": ["", "", "", ""], "res": "", "ts": 1783018800000}, {"id": "p101", "fecha": "VIE 03 - 01:00", "partido": "México - Ecuador (P83)", "pron": ["", "", "", ""], "res": "", "ts": 1783033200000}, {"id": "p102", "fecha": "VIE 03 - 05:00", "partido": "Suiza - Argelia (P85)", "pron": ["", "", "", ""], "res": "", "ts": 1783047600000}, {"id": "p103", "fecha": "VIE 03 - 20:00", "partido": "Argentina - Cabo Verde (P88)", "pron": ["", "", "", ""], "res": "", "ts": 1783101600000}, {"id": "p104", "fecha": "SÁB 04 - 00:00", "partido": "Colombia - Ghana (P86)", "pron": ["", "", "", ""], "res": "", "ts": 1783116000000}, {"id": "p105", "fecha": "SÁB 04 - 03:30", "partido": "Australia - Egipto (P87)", "pron": ["", "", "", ""], "res": "", "ts": 1783128600000}]}, {"nombre": "OCTAVOS DE FINAL", "partidos": [{"id": "p108", "fecha": "SÁB 04 - 19:00", "partido": "Ganador P73 - Ganador P75 (P90)", "pron": ["", "", "", ""], "res": "", "ts": 1783184400000}, {"id": "p109", "fecha": "SÁB 04 - 23:00", "partido": "Ganador P74 - Ganador P77 (P89)", "pron": ["", "", "", ""], "res": "", "ts": 1783198800000}, {"id": "p110", "fecha": "DOM 05 - 22:00", "partido": "Ganador P76 - Ganador P78 (P91)", "pron": ["", "", "", ""], "res": "", "ts": 1783281600000}, {"id": "p111", "fecha": "LUN 06 - 02:00", "partido": "Ganador P79 - Ganador P80 (P92)", "pron": ["", "", "", ""], "res": "", "ts": 1783296000000}, {"id": "p112", "fecha": "LUN 06 - 21:00", "partido": "Ganador P83 - Ganador P84 (P93)", "pron": ["", "", "", ""], "res": "", "ts": 1783364400000}, {"id": "p113", "fecha": "MAR 07 - 02:00", "partido": "Ganador P81 - Ganador P82 (P94)", "pron": ["", "", "", ""], "res": "", "ts": 1783382400000}, {"id": "p114", "fecha": "MAR 07 - 18:00", "partido": "Ganador P86 - Ganador P88 (P95)", "pron": ["", "", "", ""], "res": "", "ts": 1783440000000}, {"id": "p115", "fecha": "MAR 07 - 22:00", "partido": "Ganador P85 - Ganador P87 (P96)", "pron": ["", "", "", ""], "res": "", "ts": 1783454400000}]}, {"nombre": "CUARTOS DE FINAL", "partidos": [{"id": "p118", "fecha": "JUE 09 - 22:00", "partido": "Ganador P89 - Ganador P90 (P97)", "pron": ["", "", "", ""], "res": "", "ts": 1783627200000}, {"id": "p119", "fecha": "VIE 10 - 21:00", "partido": "Ganador P93 - Ganador P94 (P98)", "pron": ["", "", "", ""], "res": "", "ts": 1783710000000}, {"id": "p120", "fecha": "SÁB 11 - 23:00", "partido": "Ganador P91 - Ganador P92 (P99)", "pron": ["", "", "", ""], "res": "", "ts": 1783803600000}, {"id": "p121", "fecha": "DOM 12 - 03:00", "partido": "Ganador P95 - Ganador P96 (P100)", "pron": ["", "", "", ""], "res": "", "ts": 1783818000000}]}, {"nombre": "SEMIFINALES", "partidos": [{"id": "p124", "fecha": "MAR 14 - 21:00", "partido": "Ganador P97 - Ganador P98 (P101)", "pron": ["", "", "", ""], "res": "", "ts": 1784055600000}, {"id": "p125", "fecha": "MIÉ 15 - 21:00", "partido": "Ganador P99 - Ganador P100 (P102)", "pron": ["", "", "", ""], "res": "", "ts": 1784142000000}]}, {"nombre": "FINALES", "partidos": [{"id": "p128", "fecha": "SÁB 18 - 23:00", "partido": "TERCER Y CUARTO PUESTO", "pron": ["", "", "", ""], "res": "", "ts": 1784408400000}, {"id": "p129", "fecha": "DOM 19 - 21:00", "partido": "GRAN FINAL", "pron": ["", "", "", ""], "res": "", "ts": 1784487600000}]}]};
 let JUGADORES = SEED.jugadores;
 let datos = null;          // estado actual {secciones:[...]}
 let db = null, refPorra = null;
+
+// Nombres de partido (reference data, no de la BD): así actualizar el código
+// cambia los nombres aunque Firebase aún guarde los comodines antiguos.
+const NOMBRES = {};
+SEED.secciones.forEach(s => s.partidos.forEach(p => { NOMBRES[p.id] = p.partido; }));
+function nombrePartido(p){ return NOMBRES[p.id] || p.partido; }
+
+// ---------- resolución de nombres de eliminatorias ----------
+// Quita el sufijo "(Pxx)" y separa los dos lados del partido.
+function ladosDe(nombre){
+  let base = nombre.replace(/\s*\(P\d+\)\s*$/, '').trim();
+  if (base === 'GRAN FINAL') return ['Ganador P101', 'Ganador P102'];
+  if (base === 'TERCER Y CUARTO PUESTO') return ['Perdedor P101', 'Perdedor P102'];
+  const partes = base.split(' - ');
+  return partes.length === 2 ? [partes[0].trim(), partes[1].trim()] : [base, ''];
+}
+function numOficial(nombre){
+  const m = /\(P(\d+)\)\s*$/.exec(nombre);
+  return m ? m[1] : null;
+}
+// Índice nº oficial -> partido (para resolver "Ganador Pxx").
+function indiceOficial(){
+  const idx = {};
+  if (!datos) return idx;
+  datos.secciones.forEach(s => s.partidos.forEach(p => {
+    const n = numOficial(nombrePartido(p));
+    if (n) idx[n] = p;
+  }));
+  return idx;
+}
+// ¿Es un partido de eliminatoria (tiene formato de cruce con dos lados)?
+function esEliminatoria(p){
+  return ladosDe(nombrePartido(p))[1] !== '';
+}
+// Lado ganador de un partido: 1 (local) o 2 (visitante), o null si no resuelto.
+// Prioriza el campo 'ganador' fijado; si no, lo deduce de un resultado decisivo.
+function ladoGanador(p){
+  if (p.ganador === '1') return 1;
+  if (p.ganador === '2') return 2;
+  const r = parsear(p.res);
+  if (r && r[0] !== r[1]) return r[0] > r[1] ? 1 : 2;
+  return null;                                     // empate sin ganador indicado
+}
+// Resuelve un lado (token) a nombre de país, si se puede; si no, lo deja igual.
+function resolverLado(tok, idx, prof){
+  if (prof > 40) return tok;
+  tok = (tok || '').trim();
+  let m;
+  if (m = /^Ganador P(\d+)$/.exec(tok)) return ganadorPerdedor(m[1], true, idx, prof) || tok;
+  if (m = /^Perdedor P(\d+)$/.exec(tok)) return ganadorPerdedor(m[1], false, idx, prof) || tok;
+  return tok;                                      // nombre real de país: tal cual
+}
+// Ganador (o perdedor) del partido con ese nº oficial.
+function ganadorPerdedor(num, quiereGanador, idx, prof){
+  const p = idx[num];
+  if (!p) return null;
+  const lado = ladoGanador(p);
+  if (!lado) return null;
+  const lados = ladosDe(nombrePartido(p));
+  const n1 = resolverLado(lados[0], idx, prof+1);
+  const n2 = resolverLado(lados[1], idx, prof+1);
+  const ganaLocal = lado === 1;
+  return quiereGanador ? (ganaLocal ? n1 : n2) : (ganaLocal ? n2 : n1);
+}
+// Los dos lados resueltos de un partido [local, visitante].
+function ladosResueltos(p, idx){
+  const lados = ladosDe(nombrePartido(p));
+  if (lados[1] === '') return [nombrePartido(p), ''];
+  return [resolverLado(lados[0], idx, 0), resolverLado(lados[1], idx, 0)];
+}
+// Nombre a mostrar de un partido (resuelto si es posible).
+function nombreMostrado(p, idx){
+  const l = ladosResueltos(p, idx);
+  return l[1] === '' ? l[0] : (l[0] + ' - ' + l[1]);
+}
 
 // Horarios fijos de cada partido (epoch ms UTC), tomados de los datos base.
 // Son datos inmutables del calendario, por eso viven en el código y no en la BD.
@@ -270,7 +352,7 @@ async function hashClave(texto){
 function editable(id, campo){
   if (!usuario) return false;
   if (usuario === ADMIN && modoAdmin) return true;        // admin: escritura total
-  if (campo === 'res') return usuario === ADMIN;          // RESULT. solo Óscar
+  if (campo === 'res' || campo === 'gan') return usuario === ADMIN; // RESULT./Ganador solo Óscar
   return JUGADORES[+campo] === usuario && !bloqueado(id); // tu columna y sin empezar
 }
 
@@ -383,6 +465,7 @@ function pintarFotoLider(lider){
 
 function pintarTodo(){
   const nav = $('#nav'), main = $('#contenido');
+  const idxOf = indiceOficial();
   nav.innerHTML = ''; main.innerHTML = '';
   datos.secciones.forEach((sec,idx) => {
     const id = 'sec-'+idx;
@@ -398,23 +481,32 @@ function pintarTodo(){
 
     const section = document.createElement('section');
     section.id = id; section.style.scrollMarginTop = '4rem';
+    const elim = sec.partidos.length && esEliminatoria(sec.partidos[0]);
     section.innerHTML = `<div class="cabecera-seccion"><h2>${sec.nombre}</h2></div>
-      <div class="encabezados"><div>Fecha</div><div>Partido</div>
-      ${JUGADORES.map(j=>`<div>${j}</div>`).join('')}<div class="res">Result.</div></div>`;
+      <div class="encabezados${elim?' elim':''}"><div>Fecha</div><div>Partido</div>
+      ${JUGADORES.map(j=>`<div>${j}</div>`).join('')}<div class="res">Result.</div>${elim?'<div class="res">Ganador</div>':''}</div>`;
 
     sec.partidos.forEach(p => {
       const fila = document.createElement('div');
-      fila.className = 'partido';
+      fila.className = 'partido' + (elim?' elim':'');
+      const lados = ladosResueltos(p, idxOf);
+      const selGan = elim ? `
+        <div class="celda ganador" data-nombre="Ganador">
+          <select data-id="${p.id}" data-campo="gan" aria-label="Ganador">
+            <option value="">—</option>
+            <option value="1"${p.ganador==='1'?' selected':''}>${lados[0]}</option>
+            <option value="2"${p.ganador==='2'?' selected':''}>${lados[1]}</option>
+          </select></div>` : '';
       fila.innerHTML = `
         <div class="fecha">${p.fecha||''}</div>
-        <div class="equipos">${p.partido}</div>
+        <div class="equipos" data-mid="${p.id}">${nombreMostrado(p, idxOf)}</div>
         ${JUGADORES.map((j,i)=>`<div class="celda" data-nombre="${j}">
           <input value="${p.pron[i]||''}" placeholder="–" class="${claseAcierto(puntos(p.pron[i],p.res))}"
             data-id="${p.id}" data-campo="${i}" inputmode="numeric"
-            aria-label="Pronóstico de ${j} para ${p.partido}"></div>`).join('')}
+            aria-label="Pronóstico de ${j}"></div>`).join('')}
         <div class="celda resultado" data-nombre="Result.">
           <input value="${p.res||''}" placeholder="–" data-id="${p.id}" data-campo="res"
-            inputmode="numeric" aria-label="Resultado de ${p.partido}"></div>`;
+            inputmode="numeric" aria-label="Resultado"></div>${selGan}`;
       section.appendChild(fila);
     });
     main.appendChild(section);
@@ -440,6 +532,9 @@ function enlazarInputs(){
     inp.addEventListener('input', () => mascara(inp));
     inp.addEventListener('blur', () => guardar(inp));
     inp.addEventListener('keydown', e => { if (e.key==='Enter') inp.blur(); });
+  });
+  document.querySelectorAll('#contenido select[data-campo="gan"]').forEach(sel => {
+    sel.addEventListener('change', () => guardarGanador(sel));
   });
 }
 
@@ -481,23 +576,46 @@ function refrescar(){
     if (campo!=='res') inp.className = claseAcierto(puntos(p.pron[+campo], p.res));
   });
   aplicarBloqueos();
+  actualizarNombres();
   pintarMarcador();
 }
 
+/* Recalcula los nombres mostrados de las eliminatorias (los "Ganador Pxx"
+   cambian al introducir resultados) y actualiza también las opciones del
+   desplegable de ganador, sin reconstruir el DOM. */
+function actualizarNombres(){
+  const idxOf = indiceOficial();
+  document.querySelectorAll('#contenido .equipos[data-mid]').forEach(div => {
+    const p = buscarPartido(div.dataset.mid);
+    if (!p) return;
+    const n = nombreMostrado(p, idxOf);
+    if (div.textContent !== n) div.textContent = n;
+    // actualizar etiquetas del select de ganador de esta fila
+    const sel = div.closest('.partido').querySelector('select[data-campo="gan"]');
+    if (sel){
+      const lados = ladosResueltos(p, idxOf);
+      if (sel.options[1]) sel.options[1].textContent = lados[0];
+      if (sel.options[2]) sel.options[2].textContent = lados[1];
+      const v = p.ganador || '';
+      if (sel.value !== v && document.activeElement !== sel) sel.value = v;
+    }
+  });
+}
+
 /* Aplica permisos a cada casilla: solo tu columna (y antes de empezar el
-   partido) es editable; la columna RESULT. solo para Óscar. Las demás se
+   partido) es editable; RESULT. y Ganador solo para Óscar. Las demás se
    muestran pero deshabilitadas. Se llama al pintar, refrescar y por temporizador. */
 function aplicarBloqueos(){
-  document.querySelectorAll('#contenido input[data-campo]').forEach(inp => {
+  document.querySelectorAll('#contenido [data-campo]').forEach(inp => {
     const id = inp.dataset.id, campo = inp.dataset.campo;
     const ed = editable(id, campo);
     inp.disabled = !ed;
     const celda = inp.closest('.celda');
-    const propio = campo !== 'res' && JUGADORES[+campo] === usuario;
+    const propio = campo !== 'res' && campo !== 'gan' && JUGADORES[+campo] === usuario;
     const porTiempo = !ed && propio && bloqueado(id);      // candado solo si no editable
     celda.classList.toggle('mia', propio);                 // resalta tu columna
     celda.classList.toggle('bloqueada', porTiempo);        // candado: ya empezó
-    celda.classList.toggle('ajena', !ed && !porTiempo);    // de otro / no permitida
+    celda.classList.toggle('ajena', !ed && !porTiempo && campo !== 'gan'); // de otro
     inp.title = porTiempo ? 'Bloqueado: el partido ya ha empezado'
               : (!ed ? 'No puedes editar esta casilla' : '');
   });
@@ -532,6 +650,13 @@ async function guardar(inp){
   if (campo==='res') p.res = limpio; else p.pron[+campo] = limpio;
   inp.dataset.original = limpio;
   if (campo!=='res') inp.className = claseAcierto(puntos(p.pron[+campo], p.res));
+
+  // Al meter un RESULT. decisivo en una eliminatoria, fija el ganador solo.
+  if (campo==='res' && esEliminatoria(p)){
+    const r = parsear(limpio);
+    if (r && r[0] !== r[1]) p.ganador = r[0] > r[1] ? '1' : '2';
+    actualizarNombres();
+  }
   pintarMarcador();
 
   if (!refPorra){ toast('Modo local: configura Firebase para guardar online', true); return; }
@@ -544,18 +669,38 @@ async function guardar(inp){
   }
 }
 
+/* Guarda quién ganó (1 local / 2 visitante) un cruce; resuelve el resto del cuadro. */
+async function guardarGanador(sel){
+  if (!editable(sel.dataset.id, 'gan')){
+    sel.value = '';
+    toast('Solo Óscar puede indicar el ganador', true);
+    return;
+  }
+  const p = buscarPartido(sel.dataset.id); if (!p) return;
+  p.ganador = sel.value || '';
+  actualizarNombres();
+  if (!refPorra){ return; }
+  try{
+    await set(refPorra, datos);
+    toast('Ganador guardado ✓');
+  }catch(e){
+    toast('No se pudo guardar: ' + e.message, true);
+  }
+}
+
 /* ---------- descarga de Excel ---------- */
 function descargarExcel(){
   const cab = ['Fecha','Partido',...JUGADORES,'Resultado'];
   const aoa = [];
   const puntosAoa = [['', ...JUGADORES]];
   const acum = [0,0,0,0];
+  const idxOf = indiceOficial();
   datos.secciones.forEach(sec => {
     aoa.push([sec.nombre]);
     aoa.push(cab);
     const sub = [0,0,0,0];
     sec.partidos.forEach(p => {
-      aoa.push([p.fecha, p.partido, ...p.pron, p.res]);
+      aoa.push([p.fecha, nombreMostrado(p, idxOf), ...p.pron, p.res]);
       p.pron.forEach((pr,i)=>{ const pt=puntos(pr,p.res); if(pt){sub[i]+=pt;acum[i]+=pt;} });
     });
     aoa.push(['', 'PUNTOS '+sec.nombre, ...sub]);
